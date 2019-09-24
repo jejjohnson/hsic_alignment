@@ -4,6 +4,7 @@
 
 *.png
 *.csv 
+*.log
 
 # Vagrant
 .vagrant/
