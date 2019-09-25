@@ -72,6 +72,7 @@ class ExperimentKTA:
 
                 # Loop through random seeds
                 for iseed in self.seeds:
+
                     # generate data for MI measure
                     X, Y = self._generate_data(inoise, ifunction, iseed, dataset="mi")
 
@@ -103,7 +104,9 @@ class ExperimentKTA:
                             )
 
                             # Calculate HSIC
-                            hsic_score = self._get_hsic(X, Y, igamma, None, hsic_method)
+                            hsic_score = self._get_hsic(
+                                X, Y, gamma=igamma, subsample=None, scorer=hsic_method
+                            )
 
                             # append results to results dataframe
                             self.results_df = self.append_results(
@@ -160,7 +163,7 @@ class ExperimentKTA:
     def _get_hsic(self, X, Y, gamma, subsample, scorer):
 
         # initialize hsic
-        clf_hsic = HSIC(gamma=gamma, scorer=scorer, subsample=subsample)
+        clf_hsic = HSIC(kernel="rbf", gamma=gamma, scorer=scorer, subsample=subsample)
 
         # calculate HSIC value
         clf_hsic.fit(X, Y)
