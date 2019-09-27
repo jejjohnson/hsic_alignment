@@ -271,7 +271,7 @@ if __name__ == "__main__":
         "--sigma", type=str, default="mean", help="Sigma estimator to be used."
     )
     parser.add_argument(
-        "--save", type=str, default="large_v4_silv", help="Save name for final data."
+        "--save", type=str, default="large_v4_mean", help="Save name for final data."
     )
 
     args = parser.parse_args()
