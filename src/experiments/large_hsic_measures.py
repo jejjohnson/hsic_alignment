@@ -39,14 +39,14 @@ class LargeScaleKTA:
         self.sigma_est = sigma_est
         self.save_path = save_path
         self.save_name = save_name
-        self.datasets = ["gauss", "tstudent"]
+        self.datasets = ["tstudent", "gauss"]
         self.nus = [1, 2, 3]
         self.trials = [1, 2, 3, 4, 5]
         self.n_samples = [
             500,
             1_000,
             5_000,
-            # 10_000, 
+            # 10_000,
             # 30_000,
             # 50_000
         ]
@@ -100,7 +100,7 @@ class LargeScaleKTA:
                                         idataset,
                                         itrial,
                                         isample,
-                                        idimensions,
+                                        idimension,
                                         inu,
                                         gamma,
                                         hsic_method,
@@ -271,7 +271,7 @@ if __name__ == "__main__":
         "--sigma", type=str, default="mean", help="Sigma estimator to be used."
     )
     parser.add_argument(
-        "--save", type=str, default="large_v3_silv", help="Save name for final data."
+        "--save", type=str, default="large_v4_silv", help="Save name for final data."
     )
 
     args = parser.parse_args()
