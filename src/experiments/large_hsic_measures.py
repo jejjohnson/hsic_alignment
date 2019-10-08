@@ -88,16 +88,16 @@ class LargeScaleKTA:
                                     )
 
                                     # Add noise
-                                    X += inoise * self.rng_x.randn(
+                                    X += inoise * self.rng_x.rand(
                                         X.shape[0], X.shape[1]
                                     )
-                                    Y += inoise * self.rng_x.randn(
+                                    Y += inoise * self.rng_x.rand(
                                         Y.shape[0], Y.shape[1]
                                     )
 
                                     # estimate initial sigmas and save
-                                    gamma_mean = self._get_init_sigmas(
-                                        X, Y, method="mean"
+                                    gamma_median = self._get_init_sigmas(
+                                        X, Y, method="median"
                                     )
                                     gamma_silv = self._get_init_sigmas(
                                         X, Y, method="silverman"
@@ -126,7 +126,7 @@ class LargeScaleKTA:
                                             n_samples=isample,
                                             d_dimensions=idimension,
                                             noise=inoise,
-                                            gamma_mean=gamma_mean,
+                                            gamma_median=gamma_median,
                                             gamma_silv=gamma_silv,
                                             gamma_scott=gamma_scott,
                                             nu=inu,
@@ -167,7 +167,7 @@ class LargeScaleKTA:
                                         n_samples=isample,
                                         d_dimensions=idimension,
                                         noise=inoise,
-                                        gamma_mean=gamma_mean,
+                                        gamma_median=gamma_median,
                                         gamma_silv=gamma_silv,
                                         gamma_scott=gamma_scott,
                                         nu=np.nan,
@@ -258,7 +258,7 @@ class LargeScaleKTA:
         noise,
         nu,
         gamma,
-        gamma_mean,
+        gamma_median,
         gamma_silv,
         gamma_scott,
         hsic_method,
@@ -274,7 +274,7 @@ class LargeScaleKTA:
                 "noise": noise,
                 "nu": nu,
                 "gamma": gamma,
-                "gamma_mean": gamma_mean,
+                "gamma_median": gamma_median,
                 "gamma_silv": gamma_silv,
                 "gamma_scott": gamma_scott,
                 "scorer": hsic_method,
@@ -316,13 +316,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--gamma",
         type=int,
-        default=100,
+        default=50,
         help="Number of points in gamma parameter grid.",
     )
     parser.add_argument(
         "--noise",
         type=int,
-        default=10,
+        default=20,
         help="Amount of points for the noise parameter.",
     )
     parser.add_argument(
@@ -332,10 +332,10 @@ if __name__ == "__main__":
         help="Factor to be used for bounds for gamma parameter.",
     )
     parser.add_argument(
-        "--sigma", type=str, default="mean", help="Sigma estimator to be used."
+        "--sigma", type=str, default="median", help="Sigma estimator to be used."
     )
     parser.add_argument(
-        "--save", type=str, default="large_v4_mean", help="Save name for final data."
+        "--save", type=str, default="dist_v4_median", help="Save name for final data."
     )
 
     args = parser.parse_args()
