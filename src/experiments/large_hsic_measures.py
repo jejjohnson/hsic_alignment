@@ -332,7 +332,11 @@ if __name__ == "__main__":
         help="Factor to be used for bounds for gamma parameter.",
     )
     parser.add_argument(
-        "--sigma", type=str, default="median", help="Sigma estimator to be used."
+        "--sigma",
+        type=str,
+        choices=["median", "mean", "silverman", "scott"],
+        default="median",
+        help="Sigma estimator to be used.",
     )
     parser.add_argument(
         "--save", type=str, default="dist_v4_median", help="Save name for final data."
