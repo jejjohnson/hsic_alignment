@@ -5,7 +5,7 @@ from sklearn.utils import check_random_state, check_array
 from sklearn.metrics.pairwise import rbf_kernel
 from scipy import stats
 from typing import Optional
-from scipy.spatial.distance import pdist
+from scipy.spatial.distance import pdist, squareform
 
 
 class RandomFourierFeatures(BaseEstimator, TransformerMixin):
@@ -95,6 +95,7 @@ def estimate_sigma(
     X: np.ndarray,
     subsample: Optional[int] = None,
     method: str = "mean",
+    percent: float = 0.15,
     random_state: Optional[int] = None,
 ) -> float:
     """A function to provide a reasonable estimate of the sigma values
@@ -142,10 +143,14 @@ def estimate_sigma(
         X = rng.permutation(X)[:subsample, :]
 
     if method == "mean":
-        sigma = np.mean(pdist(X) > 0)
+        sigma = np.mean(pdist(X))
 
     elif method == "median":
-        sigma = np.median(pdist(X) > 0)
+        sigma = np.median(pdist(X))
+
+    elif method == "belkin":
+        kth_sample = int(percent * n_samples)
+        sigma = np.median(np.sort(squareform(pdist(X)))[:, kth_sample])
 
     elif method == "silverman":
         sigma = np.power(

@@ -369,6 +369,8 @@ def generate_dependence_data(
     seed: int = 123,
     noise_x: float = 0.1,
     noise_y: float = 0.1,
+    alpha: float=1.0,
+    beta:float=1.0,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Generates sample datasets to go along with a demo for paper.
     Each dataset corresponds to a different measure of correlation
@@ -408,13 +410,16 @@ def generate_dependence_data(
     # Dataset I: High Correlation, High Depedence
     if dataset.lower() == "line":
         X = rng_x.rand(num_points, 1)
+        X *= alpha
         Y = X + noise_y * rng_y.randn(num_points, 1)
     elif dataset.lower() == "sine":
         X = rng_x.rand(num_points, 1)
+        X *= alpha
         Y = np.sin(2 * np.pi * X) + noise_y * rng_y.randn(num_points, 1)
     elif dataset.lower() == "circ":
         t = 2 * np.pi * rng.rand(num_points, 1)
         X = np.cos(t) + noise_x * rng_x.randn(num_points, 1)
+        X *= alpha
         Y = np.sin(t) + noise_y * rng_y.randn(num_points, 1)
     elif dataset.lower() == "rand":
         X = rng_x.rand(num_points, 1)

@@ -178,11 +178,11 @@ class HSIC(BaseEstimator):
 def train_rbf_hsic(
     X: np.ndarray,
     Y: np.ndarray,
-    clf_hsic: BaseEstimator,
+    scorer: str = "ckta",
     n_gamma: int = 100,
     factor: int = 1,
     sigma_est: str = "mean",
-    verbose=None,
+    verbose=0,
     n_jobs=-1,
     cv=2,
 ) -> dict:
@@ -200,6 +200,13 @@ def train_rbf_hsic(
     gammas = sigma_to_gamma(sigmas)
     init_gamma = sigma_to_gamma(init_sigma)
     param_grid = {"gamma": gammas}
+
+    # Get HSIC model
+    clf_hsic = HSIC(
+        gamma=init_gamma, kernel="rbf", scorer=scorer, subsample=None, bias=True
+    )
+
+    # print(n_jobs, verbose)
 
     clf_grid = GridSearchCV(
         clf_hsic, param_grid, iid=False, n_jobs=n_jobs, verbose=verbose, cv=cv
