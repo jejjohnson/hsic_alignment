@@ -157,6 +157,7 @@ class DistributionExp:
                                         gamma=gamma,
                                         hsic_method=hsic_method,
                                         hsic_score=hsic_score,
+                                        mi_score=mi_value,
                                     )
 
                                     # save results to csv
@@ -168,7 +169,7 @@ class DistributionExp:
 
                             for istd in self.stds.items():
 
-                                X, Y, mi_value = mi_loader.get_data(
+                                X, Y, mi_score = mi_loader.get_data(
                                     samples=isample,
                                     dimensions=idimension,
                                     std=istd[0],
@@ -221,6 +222,7 @@ class DistributionExp:
                                         gamma=gamma,
                                         hsic_method=hsic_method,
                                         hsic_score=hsic_score,
+                                        mi_score=mi_score,
                                     )
 
                                     # save results to csv
@@ -289,6 +291,7 @@ class DistributionExp:
                 "gamma_belkin",
                 "scorer",
                 "value",
+                "mi_score",
             ]
         )
 
@@ -308,6 +311,7 @@ class DistributionExp:
         gamma_belkin,
         hsic_method,
         hsic_score,
+        mi_score,
     ):
         # append data
         return results_df.append(
@@ -325,6 +329,7 @@ class DistributionExp:
                 "gamma_belkin": gamma_belkin,
                 "scorer": hsic_method,
                 "value": hsic_score,
+                "mi_score": mi_score,
             },
             ignore_index=True,
         )
@@ -378,7 +383,7 @@ if __name__ == "__main__":
         help="Sigma estimator to be used.",
     )
     parser.add_argument(
-        "--save", type=str, default="dist_v1_belkin", help="Save name for final data."
+        "--save", type=str, default="dist_v2_belkin", help="Save name for final data."
     )
 
     args = parser.parse_args()
