@@ -30,7 +30,7 @@ class RandomFourierFeatures(BaseEstimator, TransformerMixin):
         n_features = X.shape[1]
 
         # Generate D iid samples from p(w)
-        self.weights = (2 * gamma) * self.rng.normal(
+        self.weights = (2 * self.gamma) * self.rng.normal(
             size=(n_features, self.n_components)
         )
 

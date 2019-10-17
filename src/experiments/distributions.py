@@ -47,6 +47,16 @@ class DistributionExp:
         # free experimental params
         self.scorers = ["hsic", "tka", "ctka"]
         self.datasets = ["gauss", "tstudent"]
+        self.gamma_initializations = [
+            "max",
+            "silverman",
+            "median",
+            "belkin20",
+            "belkin40",
+            "belkin60",
+            "belkin80",
+            "scott",
+        ]
         self.nus = {
             "1": 1,
             "2": 2,
@@ -101,135 +111,116 @@ class DistributionExp:
 
                     # Loop through random seeds
                     for itrial in self.trials:
-                        if idataset == "tstudent":
 
-                            # GET MI DATA
-                            mi_loader = MIData(idataset)
+                        for igamma_method in self.gamma_initializations:
+                            if idataset == "tstudent":
 
-                            for inu in self.nus.items():
+                                # GET MI DATA
+                                mi_loader = MIData(idataset)
 
-                                X, Y, mi_value = mi_loader.get_data(
-                                    samples=isample,
-                                    dimensions=idimension,
-                                    std=None,
-                                    trial=itrial,
-                                    nu=inu[0],
-                                )
-                                # estimate initial sigmas and save
-                                gamma_median = self._get_init_sigmas(
-                                    X, Y, method="median"
-                                )
-                                gamma_silv = self._get_init_sigmas(
-                                    X, Y, method="silverman"
-                                )
-                                gamma_scott = self._get_init_sigmas(
-                                    X, Y, method="scott"
-                                )
-                                gamma_belkin = self._get_init_sigmas(
-                                    X, Y, method="belkin"
-                                )
+                                for inu in self.nus.items():
 
-                                # Loop through HSIC scoring methods
-                                for hsic_method in self.scorers:
+                                    X, Y, mi_value = mi_loader.get_data(
+                                        samples=isample,
+                                        dimensions=idimension,
+                                        std=None,
+                                        trial=itrial,
+                                        nu=inu[0],
+                                    )
+
+                                    # estimate initial gamma
+                                    gamma_init = self._get_init_sigmas(
+                                        X, Y, method=igamma_method
+                                    )
+
+                                    # Loop through HSIC scoring methods
+                                    for hsic_method in self.scorers:
+
+                                        # =======================
+                                        # HSIC MEASURES
+                                        # =======================
+
+                                        # Calculate HSIC
+                                        hsic_score, gamma = self._get_hsic(
+                                            X, Y, hsic_method, gamma_init
+                                        )
+
+                                        # append results to results dataframe
+                                        self.results_df = self.append_results(
+                                            results_df=self.results_df,
+                                            dataset=idataset,
+                                            trial=itrial,
+                                            n_samples=isample,
+                                            d_dimensions=idimension,
+                                            gamma_init=igamma_method,
+                                            gamma=gamma,
+                                            nu=inu[1],
+                                            std=np.nan,
+                                            hsic_method=hsic_method,
+                                            hsic_score=hsic_score,
+                                            mi_score=mi_value,
+                                        )
+
+                                        # save results to csv
+                                        self.save_data(self.results_df)
+
+                            elif idataset == "gauss":
+
+                                # Load the MI dataset
+                                mi_loader = MIData(idataset)
+
+                                for istd in self.stds.items():
+
+                                    X, Y, mi_score = mi_loader.get_data(
+                                        samples=isample,
+                                        dimensions=idimension,
+                                        std=istd[0],
+                                        trial=itrial,
+                                        nu=None,
+                                    )
+
+                                    # estimate initial sigmas and save
+                                    gamma_init = self._get_init_sigmas(
+                                        X, Y, method=igamma_method
+                                    )
 
                                     # =======================
                                     # HSIC MEASURES
                                     # =======================
 
-                                    # Calculate HSIC
-                                    hsic_score, gamma = self._get_hsic(
-                                        X, Y, hsic_method
-                                    )
+                                    # Loop through HSIC scoring methods
+                                    for hsic_method in self.scorers:
 
-                                    # append results to results dataframe
-                                    self.results_df = self.append_results(
-                                        results_df=self.results_df,
-                                        dataset=idataset,
-                                        trial=itrial,
-                                        n_samples=isample,
-                                        d_dimensions=idimension,
-                                        gamma_median=gamma_median,
-                                        gamma_silv=gamma_silv,
-                                        gamma_scott=gamma_scott,
-                                        gamma_belkin=gamma_belkin,
-                                        nu=inu[1],
-                                        std=np.nan,
-                                        gamma=gamma,
-                                        hsic_method=hsic_method,
-                                        hsic_score=hsic_score,
-                                        mi_score=mi_value,
-                                    )
+                                        # =======================
+                                        # HSIC MEASURES
+                                        # =======================
 
-                                    # save results to csv
-                                    self.save_data(self.results_df)
+                                        # Calculate HSIC
+                                        hsic_score, gamma = self._get_hsic(
+                                            X, Y, hsic_method, gamma_init
+                                        )
 
-                        elif idataset == "gauss":
+                                        # append results to results dataframe
+                                        self.results_df = self.append_results(
+                                            results_df=self.results_df,
+                                            dataset=idataset,
+                                            trial=itrial,
+                                            n_samples=isample,
+                                            d_dimensions=idimension,
+                                            gamma_init=igamma_method,
+                                            nu=np.nan,
+                                            std=istd[1],
+                                            gamma=gamma,
+                                            hsic_method=hsic_method,
+                                            hsic_score=hsic_score,
+                                            mi_score=mi_score,
+                                        )
 
-                            mi_loader = MIData(idataset)
+                                        # save results to csv
+                                        self.save_data(self.results_df)
 
-                            for istd in self.stds.items():
-
-                                X, Y, mi_score = mi_loader.get_data(
-                                    samples=isample,
-                                    dimensions=idimension,
-                                    std=istd[0],
-                                    trial=itrial,
-                                    nu=None,
-                                )
-
-                                # estimate initial sigmas and save
-                                gamma_median = self._get_init_sigmas(
-                                    X, Y, method="median"
-                                )
-                                gamma_silv = self._get_init_sigmas(
-                                    X, Y, method="silverman"
-                                )
-                                gamma_scott = self._get_init_sigmas(
-                                    X, Y, method="scott"
-                                )
-                                gamma_belkin = self._get_init_sigmas(
-                                    X, Y, method="belkin"
-                                )
-                                # =======================
-                                # HSIC MEASURES
-                                # =======================
-
-                                # Loop through HSIC scoring methods
-                                for hsic_method in self.scorers:
-
-                                    # =======================
-                                    # HSIC MEASURES
-                                    # =======================
-
-                                    # Calculate HSIC
-                                    hsic_score, gamma = self._get_hsic(
-                                        X, Y, hsic_method
-                                    )
-
-                                    # append results to results dataframe
-                                    self.results_df = self.append_results(
-                                        results_df=self.results_df,
-                                        dataset=idataset,
-                                        trial=itrial,
-                                        n_samples=isample,
-                                        d_dimensions=idimension,
-                                        gamma_median=gamma_median,
-                                        gamma_silv=gamma_silv,
-                                        gamma_scott=gamma_scott,
-                                        gamma_belkin=gamma_belkin,
-                                        nu=np.nan,
-                                        std=istd[1],
-                                        gamma=gamma,
-                                        hsic_method=hsic_method,
-                                        hsic_score=hsic_score,
-                                        mi_score=mi_score,
-                                    )
-
-                                    # save results to csv
-                                    self.save_data(self.results_df)
-
-                        else:
-                            raise ValueError(f"Unrecognized dataset: {idataset}")
+                            else:
+                                raise ValueError(f"Unrecognized dataset: {idataset}")
 
         return self
 
@@ -246,32 +237,57 @@ class DistributionExp:
     def _get_init_sigmas(self, X, Y, method=None):
 
         # check override for sigma estimator
-        if method is None:
-            method = self.sigma_est
+        if method in ["belkin20", "belkin40", "belkin60", "belkin80"]:
+            percent = float(method[-2:]) / 100
+            method = "belkin"
 
-        # estimate initialize sigma
-        sigma_x = estimate_sigma(X, method=method)
-        sigma_y = estimate_sigma(Y, method=method)
+            # estimate initialize sigma
+            sigma_x = estimate_sigma(X, method=method, percent=percent)
+            sigma_y = estimate_sigma(Y, method=method, percent=percent)
+
+        elif method is None or method == "max":
+
+            method = self.sigma_est
+            # estimate initialize sigma
+            sigma_x = estimate_sigma(X, method=method)
+            sigma_y = estimate_sigma(Y, method=method)
+
+        elif method in ["silverman", "scott", "median", "mean"]:
+
+            sigma_x = estimate_sigma(X, method=method)
+            sigma_y = estimate_sigma(Y, method=method)
+
+        else:
+            raise ValueError(f"Unrecognized method: {method}")
 
         # init overall sigma is mean between two
         init_sigma = np.mean([sigma_x, sigma_y])
 
         return init_sigma
 
-    def _get_hsic(self, X, Y, scorer):
+    def _get_hsic(self, X, Y, scorer, init_gamma=None):
 
-        # calculate HSIC return scorer
-        clf_hsic = train_rbf_hsic(
-            X,
-            Y,
-            scorer,
-            n_gamma=self.n_gamma,
-            factor=self.factor,
-            sigma_est="mean",
-            verbose=0,
-            n_jobs=-1,
-            cv=3,
-        )
+        if scorer == "max":
+            # cross validated HSIC method for maximization
+            clf_hsic = train_rbf_hsic(
+                X,
+                Y,
+                scorer,
+                n_gamma=self.n_gamma,
+                factor=self.factor,
+                sigma_est=self.sigma_est,
+                verbose=0,
+                n_jobs=-1,
+                cv=2,
+            )
+        else:
+            # standard HSIC method without maximization
+            clf_hsic = HSIC(
+                gamma=init_gamma, kernel="rbf", scorer=scorer, subsample=None, bias=True
+            )
+
+            clf_hsic.fit(X, Y)
+
         # hsic value and kernel alignment score
         return clf_hsic.hsic_value, clf_hsic.gamma
 
@@ -284,11 +300,8 @@ class DistributionExp:
                 "d_dimensions",
                 "nu",
                 "std",
+                "gamma_init",
                 "gamma",
-                "gamma_median",
-                "gamma_silv",
-                "gamma_scott",
-                "gamma_belkin",
                 "scorer",
                 "value",
                 "mi_score",
@@ -305,10 +318,7 @@ class DistributionExp:
         std,
         nu,
         gamma,
-        gamma_median,
-        gamma_silv,
-        gamma_scott,
-        gamma_belkin,
+        gamma_init,
         hsic_method,
         hsic_score,
         mi_score,
@@ -322,11 +332,8 @@ class DistributionExp:
                 "d_dimensions": d_dimensions,
                 "nu": nu,
                 "std": std,
+                "gamma_init": gamma_init,
                 "gamma": gamma,
-                "gamma_median": gamma_median,
-                "gamma_silv": gamma_silv,
-                "gamma_scott": gamma_scott,
-                "gamma_belkin": gamma_belkin,
                 "scorer": hsic_method,
                 "value": hsic_score,
                 "mi_score": mi_score,
@@ -383,7 +390,7 @@ if __name__ == "__main__":
         help="Sigma estimator to be used.",
     )
     parser.add_argument(
-        "--save", type=str, default="dist_v2_belkin", help="Save name for final data."
+        "--save", type=str, default="dist_v1_gamma", help="Save name for final data."
     )
 
     args = parser.parse_args()
