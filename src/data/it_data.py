@@ -15,7 +15,7 @@ class MIData:
     nu = 1:9
     """
 
-    def __init__(self, distribution: Optional["gauss"]) -> None:
+    def __init__(self, distribution: Optional["gauss"] = None) -> None:
 
         self.distribution = distribution
         self.data_path = "/media/disk/erc/papers/2019_HSIC_ALIGN/data/mi_distributions/"

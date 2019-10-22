@@ -129,9 +129,12 @@ class DistributionExp:
                                     )
 
                                     # estimate initial gamma
-                                    gamma_init = self._get_init_sigmas(
+                                    sigma_init = self._get_init_sigmas(
                                         X, Y, method=igamma_method
                                     )
+
+                                    # convert sigma to gamma
+                                    gamma_init = sigma_to_gamma(sigma_init)
 
                                     # Loop through HSIC scoring methods
                                     for hsic_method in self.scorers:
