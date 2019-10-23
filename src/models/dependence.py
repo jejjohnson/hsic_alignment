@@ -175,6 +175,40 @@ class HSIC(BaseEstimator):
         return self.hsic_value
 
 
+def get_gamma_init(
+    X: np.ndarray, Y: np.ndarray, method: str, percent: Optional[float] = None
+) -> float:
+    """Get Gamma initializer
+    
+    Parameters
+    ----------
+    method : str,
+        the initialization method
+        
+    percent : float
+        if using the Belkin method, this uses a percentage
+        of the kth nearest neighbour
+    
+    Returns
+    -------
+    gamma_init : float
+        the initial gamma value
+    """
+
+    # initialize sigma
+    sigma_init_X = estimate_sigma(X, method=method, percent=percent)
+    sigma_init_Y = estimate_sigma(Y, method=method, percent=percent)
+
+    # mean of the two
+    sigma_init = np.mean([sigma_init_X, sigma_init_Y])
+
+    # convert sigma to gamma
+    gamma_init = sigma_to_gamma(sigma_init)
+
+    # return initial gamma value
+    return gamma_init
+
+
 def train_rbf_hsic(
     X: np.ndarray,
     Y: np.ndarray,
