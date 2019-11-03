@@ -369,12 +369,16 @@ def generate_dependence_data(
     seed: int = 123,
     noise_x: float = 0.1,
     noise_y: float = 0.1,
-    alpha: float=1.0,
-    beta:float=1.0,
+    alpha: float = 1.0,
+    beta: float = 1.0,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Generates sample datasets to go along with a demo for paper.
     Each dataset corresponds to a different measure of correlation
     and dependence.
+
+    **Note**: This dataset corresponds to data generated for the
+    initialization experiment, the gamma parameter space 
+    experiment and the isotropic scaling experiment.
     
     Parameters
     ----------
@@ -383,7 +387,7 @@ def generate_dependence_data(
         {'line', 'sine', 'circ', 'rand'}
         'line' : High Correlation, High Dependence (linear)
         'sine' : High Correlation, High Dependence (nonlinear)
-        'circ' : High Correlation, Low Depedence
+        'circ' : High Correlation, Low Dependence
         'rand' : Low Correlation, Low Dependence
         
     num_points : int, optional (default=1000)
@@ -398,35 +402,51 @@ def generate_dependence_data(
     noise_y : int, default = 0.1
         the amount of noise added to the Y variable
     
+    alpha :float, default=1.0
+        The scaling parameter to add to the X variable after
+        the data is generated.
+    
+    beta : float, defualt=1.0
+        The scaling parameter to add to the Y variable after
+        the data is generated.
+    
     Returns
     -------
-
-        
+    X : np.ndarray, (n_samples x 1)
+        The X data 
+    
+    Y : np.ndarray, (n_samples x 1)
+        The y data
     """
     rng = check_random_state(seed - 1)
     rng_x = check_random_state(seed)
     rng_y = check_random_state(seed + 1)
 
-    # Dataset I: High Correlation, High Depedence
     if dataset.lower() == "line":
         X = rng_x.rand(num_points, 1)
-        X *= alpha
         Y = X + noise_y * rng_y.randn(num_points, 1)
-    elif dataset.lower() == "sine":
+
+    elif dataset.lower() == ["sine", "sinusoidal"]:
         X = rng_x.rand(num_points, 1)
-        X *= alpha
         Y = np.sin(2 * np.pi * X) + noise_y * rng_y.randn(num_points, 1)
-    elif dataset.lower() == "circ":
+
+    elif dataset.lower() in ["circ", "circle"]:
         t = 2 * np.pi * rng.rand(num_points, 1)
         X = np.cos(t) + noise_x * rng_x.randn(num_points, 1)
-        X *= alpha
         Y = np.sin(t) + noise_y * rng_y.randn(num_points, 1)
-    elif dataset.lower() == "rand":
+
+    elif dataset.lower() in ["rand", "random"]:
         X = rng_x.rand(num_points, 1)
         Y = rng_y.rand(num_points, 1)
+
     else:
         raise ValueError(f"Unrecognized dataset: {dataset}")
 
+    # scale data
+    X *= alpha
+    Y *= beta
+
+    # return X, Y
     return X, Y
 
 

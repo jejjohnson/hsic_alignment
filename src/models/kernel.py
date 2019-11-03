@@ -94,8 +94,9 @@ def get_param_grid(
 def estimate_sigma(
     X: np.ndarray,
     subsample: Optional[int] = None,
-    method: str = "mean",
-    percent: float = 0.15,
+    method: str = "median",
+    percent: Optional[float] = 0.15,
+    scale: float = 1.0,
     random_state: Optional[int] = None,
 ) -> float:
     """A function to provide a reasonable estimate of the sigma values
@@ -105,7 +106,7 @@ def estimate_sigma(
     X : array, (n_samples, d_dimensions)
         The data matrix to be estimated.
 
-    method : str {'mean'} default: 'mean'
+    method : str, default: 'median'
         different methods used to estimate the sigma for the rbf kernel
         matrix.
         * Mean
@@ -113,6 +114,13 @@ def estimate_sigma(
         * Silverman
         * Scott - very common for density estimation
 
+    percent : float, default=0.15
+        The kth percentage of distance chosen
+
+    scale : float, default=None
+        Option to scale the sigma chosen. Typically used with the
+        median or mean method as they are data dependent.
+    
     random_state : int, (default: None)
         controls the seed for the subsamples drawn to represent
         the data distribution
@@ -125,6 +133,7 @@ def estimate_sigma(
     Resources
     ---------
     - Original MATLAB function: https://goo.gl/xYoJce
+
     Information
     -----------
     Author : J. Emmanuel Johnson
@@ -142,13 +151,17 @@ def estimate_sigma(
     if subsample is not None:
         X = rng.permutation(X)[:subsample, :]
 
-    if method == "mean":
+    if method == "mean" and percent is None:
         sigma = np.mean(pdist(X))
 
-    elif method == "median":
+    elif method == "median" and percent is not None:
+        kth_sample = int(percent * n_samples)
+        sigma = np.mean(np.sort(squareform(pdist(X)))[:, kth_sample])
+
+    elif method == "median" and percent is None:
         sigma = np.median(pdist(X))
 
-    elif method == "belkin":
+    elif method == "median" and percent is not None:
         kth_sample = int(percent * n_samples)
         sigma = np.median(np.sort(squareform(pdist(X)))[:, kth_sample])
 
@@ -163,6 +176,11 @@ def estimate_sigma(
     else:
         raise ValueError('Unrecognized mode "{}".'.format(method))
 
+    # scale the sigma by a factor
+    if scale is not None:
+        sigma *= scale
+
+    # return sigma
     return sigma
 
 

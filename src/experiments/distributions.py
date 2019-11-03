@@ -22,6 +22,23 @@ warnings.filterwarnings("ignore")  # get rid of annoying warnings
 SAVE_PATH = "/home/emmanuel/projects/2019_hsic_align/results/distribution/"
 
 
+from typing import Tuple
+
+
+def get_gamma_name(gamma_method: Tuple[str, str, str]) -> str:
+    if gamma_method[1] is None and gamma_method[2] is None:
+        gamma_name = gamma_method[0]
+    elif gamma_method[1] is not None and gamma_method[2] is None:
+        gamma_name = f"{gamma_method[0]}_p{gamma_method[1]}"
+    elif gamma_method[1] is None and gamma_method[2] is not None:
+        gamma_name = f"{gamma_method[0]}_s{gamma_method[2]}"
+    elif gamma_method[1] is not None and gamma_method[2] is not None:
+        gamma_name = f"{gamma_method[0]}_s{gamma_method[1]}_s{gamma_method[2]}"
+    else:
+        raise ValueError("Unrecognized Combination...")
+    return gamma_name
+
+
 def main(args):
 
     # clf_exp = DistributionExp(
@@ -49,16 +66,18 @@ def main(args):
     # experimental parameters
     scorers = ["hsic", "tka", "ctka"]
     gamma_methods = [
-        ("silverman", None),
-        ("scott", None),
-        ("median", None),
-        ("belkin", 0.1),
-        ("belkin", 0.2),
-        ("belkin", 0.4),
-        ("belkin", 0.5),
-        ("belkin", 0.6),
-        ("belkin", 0.8),
-        ("max", None),
+        ("silverman", None, None),
+        ("scott", None, None),
+        ("median", 0.2, None),
+        ("median", 0.4, None),
+        ("median", None, None),
+        ("median", 0.6, None),
+        ("median", 0.8, None),
+        ("median", None, 0.01),
+        ("median", None, 0.1),
+        ("median", None, 10),
+        ("median", None, 100),
+        #     ('max', None, None)
     ]
     std_params = np.linspace(1, 11, 11, endpoint=True, dtype=int)
     nu_params = np.linspace(1, 9, 9, endpoint=True, dtype=int)
@@ -119,9 +138,11 @@ def main(args):
                                         )
                                     else:
                                         gamma_init = get_gamma_init(
-                                            X, Y, imethod[0], imethod[1]
+                                            X, Y, imethod[0], imethod[1], imethod[2]
                                         )
                                         hsic_value = get_hsic(X, Y, iscorer, gamma_init)
+
+                                    gamma_name = get_gamma_name(imethod)
 
                                     # append results to dataframe
                                     results_df = results_df.append(
@@ -131,9 +152,7 @@ def main(args):
                                             "dimensions": idim,
                                             "trial": itrial,
                                             "scorer": iscorer,
-                                            "gamma_method": f"{imethod[0]}_{imethod[1]}"
-                                            if imethod[1] is not None
-                                            else f"{imethod[0]}",
+                                            "gamma_method": gamma_name,
                                             "gamma_init": gamma_init,
                                             "hsic_value": hsic_value,
                                             "dof": idof,

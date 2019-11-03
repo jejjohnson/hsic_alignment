@@ -74,7 +74,11 @@ def get_hsic(
 
 
 def get_gamma_init(
-    X: np.ndarray, Y: np.ndarray, method: str, percent: Optional[float] = None
+    X: np.ndarray,
+    Y: np.ndarray,
+    method: str,
+    percent: Optional[float] = None,
+    scale: Optional[float] = None,
 ) -> float:
     """Get Gamma initializer
     
@@ -94,8 +98,8 @@ def get_gamma_init(
     """
 
     # initialize sigma
-    sigma_init_X = estimate_sigma(X, method=method, percent=percent)
-    sigma_init_Y = estimate_sigma(Y, method=method, percent=percent)
+    sigma_init_X = estimate_sigma(X, method=method, percent=percent, scale=scale)
+    sigma_init_Y = estimate_sigma(Y, method=method, percent=percent, scale=scale)
 
     # mean of the two
     sigma_init = np.mean([sigma_init_X, sigma_init_Y])
