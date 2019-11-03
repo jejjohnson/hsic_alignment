@@ -5,7 +5,9 @@
 *.png
 *.csv 
 *.log
-
+\data/*
+\results/distribution/*
+\results/scaling/*
 # Vagrant
 .vagrant/
 
