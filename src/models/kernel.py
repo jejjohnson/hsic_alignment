@@ -150,11 +150,11 @@ def estimate_sigma(
 
     if subsample is not None:
         X = rng.permutation(X)[:subsample, :]
-
+    # print(method, percent)
     if method == "mean" and percent is None:
         sigma = np.mean(pdist(X))
 
-    elif method == "median" and percent is not None:
+    elif method == "mean" and percent is not None:
         kth_sample = int(percent * n_samples)
         sigma = np.mean(np.sort(squareform(pdist(X)))[:, kth_sample])
 

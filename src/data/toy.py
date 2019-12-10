@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.utils import check_random_state
 from typing import Tuple
 from scipy.stats import norm, uniform, ortho_group, entropy as sci_entropy
+from sklearn.preprocessing import StandardScaler
 
 
 class RBIGData(object):
@@ -363,6 +364,38 @@ class RBIGData(object):
         return results
 
 
+def generate_isotropic_data(
+    dataset: str = "line",
+    num_points: int = 1000,
+    seed: int = 123,
+    scale: float = 10.0,
+    normalize: bool = False,
+) -> Tuple[np.ndarray, np.ndarray]:
+
+    noise_x = 0.1
+    noise_y = 0.1
+    alpha = scale
+    beta = 1.0
+
+    # extract data from dependence data
+    X, Y = generate_dependence_data(
+        dataset=dataset,
+        num_points=num_points,
+        noise_x=noise_x,
+        noise_y=noise_y,
+        seed=seed,
+        alpha=alpha,
+        beta=beta,
+    )
+
+    # normalize data
+    if normalize:
+        X = StandardScaler().fit_transform(X)
+        Y = StandardScaler().fit_transform(Y)
+
+    return X, Y
+
+
 def generate_dependence_data(
     dataset: str = "line",
     num_points: int = 1000,
@@ -426,7 +459,7 @@ def generate_dependence_data(
         X = rng_x.rand(num_points, 1)
         Y = X + noise_y * rng_y.randn(num_points, 1)
 
-    elif dataset.lower() == ["sine", "sinusoidal"]:
+    elif dataset.lower() in ["sine", "sinusoidal"]:
         X = rng_x.rand(num_points, 1)
         Y = np.sin(2 * np.pi * X) + noise_y * rng_y.randn(num_points, 1)
 
