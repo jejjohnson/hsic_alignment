@@ -465,7 +465,7 @@ def generate_dependence_data(
 
     elif dataset.lower() in ["circ", "circle"]:
         t = 2 * np.pi * rng.rand(num_points, 1)
-        X = np.cos(t) + noise_x * rng_x.randn(num_points, 1)
+        X = np.cos(t)  # + noise_x * rng_x.randn(num_points, 1)
         Y = np.sin(t) + noise_y * rng_y.randn(num_points, 1)
 
     elif dataset.lower() in ["rand", "random"]:
