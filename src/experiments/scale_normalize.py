@@ -54,7 +54,7 @@ def get_params(case: int):
 
         class DataParams:
             num_points = 2_000
-            noise_y = 0.001
+            noise_y = 0.0
             alpha = 1.0
             beta = 1.0
 

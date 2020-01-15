@@ -455,7 +455,7 @@ def generate_dependence_data(
     rng_x = check_random_state(seed)
     rng_y = check_random_state(seed + 1)
 
-    if dataset.lower() == "line":
+    if dataset.lower() in ["line", 'linear']:
         X = rng_x.rand(num_points, 1)
         Y = X + noise_y * rng_y.randn(num_points, 1)
 
