@@ -65,7 +65,7 @@ def get_params(case: int):
                 "circ",
                 # "rand"
             ]
-            seed = [1]  # np.linspace(1, 10, 10, dtype=int)
+            seed = np.linspace(1, 10, 10, dtype=int)
             scale = [1.0]
             normalized = [False]
             noise = np.logspace(-2, 1, 10)
@@ -94,7 +94,7 @@ def get_params(case: int):
                 "circ",
                 # "rand"
             ]
-            seed = [1]  # seed = np.linspace(1, 10, 10, dtype=int)
+            seed = np.linspace(1, 10, 10, dtype=int)
             scale = [1.0]
             normalized = [True]
             noise = np.logspace(-2, 1, 10)
@@ -123,7 +123,7 @@ def get_params(case: int):
                 "circ",
                 # "rand",
             ]
-            seed = [1]  # seed = np.linspace(1, 10, 10, dtype=int)
+            seed = np.linspace(1, 10, 10, dtype=int)
             scale = np.logspace(-2, 2, 10)
             normalized = [False]
             noise = np.logspace(-2, 1, 10)
@@ -152,7 +152,7 @@ def get_params(case: int):
                 "circ",
                 # "rand"
             ]
-            seed = [1]  # seed = np.linspace(1, 10, 10, dtype=int)
+            seed = np.linspace(1, 10, 10, dtype=int)
             scale = np.logspace(-2, 2, 10)  # [0.01, 1.0, 100.0]
             normalized = [True]
             noise = np.logspace(-3, 1, 10)
