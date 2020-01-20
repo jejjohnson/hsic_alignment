@@ -13,7 +13,7 @@ source activate it4dnn
 # Global Experiment
 
 # Individual
-srun --nodes 1 --ntasks 1 python -u src/experiments/scale_normalize.py --case 1 --save v2 &
-srun --nodes 1 --ntasks 1 python -u src/experiments/scale_normalize.py --case 2 --save v2 &
-srun --nodes 1 --ntasks 1 python -u src/experiments/scale_normalize.py --case 3 --save v2 &
-srun --nodes 1 --ntasks 1 python -u src/experiments/scale_normalize.py --case 4 --save v2
+srun --nodes 1 --ntasks 1 python -u src/experiments/scale_normalize.py --case 1 --save v3 &
+srun --nodes 1 --ntasks 1 python -u src/experiments/scale_normalize.py --case 2 --save v3 &
+srun --nodes 1 --ntasks 1 python -u src/experiments/scale_normalize.py --case 3 --save v3 &
+srun --nodes 1 --ntasks 1 python -u src/experiments/scale_normalize.py --case 4 --save v3

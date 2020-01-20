@@ -8,7 +8,8 @@ def get_hsic(
     X: np.ndarray,
     Y: np.ndarray,
     scorer: str,
-    gamma_init: float,
+    gamma_init_X: float,
+    gamma_init_Y: Optional[float] = None,
     maximum: bool = False,
     n_gamma: int = 50,
     factor: int = 1,
@@ -53,11 +54,14 @@ def get_hsic(
     # cross val parameters
 
     # initialize HSIC model
-    if maximum == True:
+    if maximum == True and gamma_init_Y is not None:
+        raise ValueError("Cannot do maximum of two initializations.")
+    elif maximum == True and gamma_init_Y is None:
         clf_hsic = train_rbf_hsic(X, Y, scorer, n_gamma, factor, "median")
     else:
         clf_hsic = HSIC(
-            gamma=gamma_init,
+            gamma_X=gamma_init_X,
+            gamma_Y=gamma_init_Y,
             kernel=kernel,
             scorer=scorer,
             subsample=subsample,
@@ -79,6 +83,7 @@ def get_gamma_init(
     method: str,
     percent: Optional[float] = None,
     scale: Optional[float] = None,
+    each_length: bool = False,
 ) -> float:
     """Get Gamma initializer
     
@@ -93,19 +98,33 @@ def get_gamma_init(
     
     Returns
     -------
-    gamma_init : float
-        the initial gamma value
+    gamma_init_X : float
+        the initial gamma value for X
+        (will be used for both X and Y)
+
+    gamma_init_Y : float (Optional)
+        the initial gamma value for Y
     """
 
     # initialize sigma
     sigma_init_X = estimate_sigma(X, method=method, percent=percent, scale=scale)
     sigma_init_Y = estimate_sigma(Y, method=method, percent=percent, scale=scale)
 
-    # mean of the two
-    sigma_init = np.mean([sigma_init_X, sigma_init_Y])
+    if each_length == False:
+        # mean of the two
+        sigma_init = np.mean([sigma_init_X, sigma_init_Y])
 
-    # convert sigma to gamma
-    gamma_init = sigma_to_gamma(sigma_init)
+        # convert sigma to gamma
+        gamma_init_X = sigma_to_gamma(sigma_init)
 
-    # return initial gamma value
-    return gamma_init
+        # return initial gamma value
+        return gamma_init_X
+    elif each_length == True:
+        # convert sigmas to gammas
+        gamma_init_x = sigma_to_gamma(sigma_init_X)
+        gamma_init_y = sigma_to_gamma(sigma_init_Y)
+
+        # return initial gamma values
+        return gamma_init_x, gamma_init_y
+    else:
+        raise ValueError(f"Unrecognized option for each_length: {each_length}")

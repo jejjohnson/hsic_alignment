@@ -31,11 +31,16 @@ class HSIC(BaseEstimator):
         order to pass a precomputed kernel matrix to the estimator
         methods instead of samples.
     
-    gamma : float, default=None
+    gamma_X : float, default=None
         Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
-        and sigmoid kernels. Interpretation of the default value is left to
-        the kernel; see the documentation for sklearn.metrics.pairwise.
+        and sigmoid kernels. Used only by the X parameter. 
+        Interpretation of the default value is left to the kernel; 
+        see the documentation for sklearn.metrics.pairwise.
         Ignored by other kernels.
+
+    gamma_Y : float, default=None
+        The same gamma parameter as the X. If None, the same gamma_X will be
+        used for the Y.
     
     degree : float, default=3
         Degree of the polynomial kernel. Ignored by other kernels.
@@ -79,7 +84,8 @@ class HSIC(BaseEstimator):
 
     def __init__(
         self,
-        gamma: float = 1.0,
+        gamma_X: float = 1.0,
+        gamma_Y: Optional[None] = None,
         kernel: Union[Callable, str] = "rbf",
         degree: float = 3,
         coef0: float = 1,
@@ -89,7 +95,8 @@ class HSIC(BaseEstimator):
         subsample: Optional[int] = None,
         bias: bool = True,
     ):
-        self.gamma = gamma
+        self.gamma_X = gamma_X
+        self.gamma_Y = gamma_Y
         self.kernel = kernel
         self.degree = degree
         self.coef0 = coef0
@@ -122,8 +129,8 @@ class HSIC(BaseEstimator):
         self.Y_train_ = Y
 
         # Calculate Kernel Matrices
-        K_x = self.compute_kernel(X)
-        K_y = self.compute_kernel(Y)
+        K_x = self.compute_kernel(X, gamma=self.gamma_X)
+        K_y = self.compute_kernel(Y, gamma=self.gamma_Y)
 
         # Center Kernel
         # H = np.eye(n_samples) - (1 / n_samples) * np.ones(n_samples)
@@ -137,11 +144,11 @@ class HSIC(BaseEstimator):
 
         return self
 
-    def compute_kernel(self, X, Y=None):
+    def compute_kernel(self, X, Y=None, gamma=1.0):
         if callable(self.kernel):
             params = self.kernel_params or {}
         else:
-            params = {"gamma": self.gamma, "degree": self.degree, "coef0": self.coef0}
+            params = {"gamma": gamma, "degree": self.degree, "coef0": self.coef0}
         return pairwise_kernels(X, Y, metric=self.kernel, filter_params=True, **params)
 
     @property

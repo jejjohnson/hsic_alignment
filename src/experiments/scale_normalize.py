@@ -70,6 +70,7 @@ def get_params(case: int):
             normalized = [False]
             noise = np.logspace(-2, 1, 10)
             method = ["hsic", "tka", "ctka"]
+            each_length = [True]
             gamma_method = [
                 ("median", 0.2, None),
                 ("median", 0.4, None),
@@ -99,6 +100,7 @@ def get_params(case: int):
             normalized = [True]
             noise = np.logspace(-2, 1, 10)
             method = ["hsic", "tka", "ctka"]
+            each_length = [True]
             gamma_method = [
                 ("median", 0.2, None),
                 ("median", 0.4, None),
@@ -128,6 +130,7 @@ def get_params(case: int):
             normalized = [False]
             noise = np.logspace(-2, 1, 10)
             method = ["hsic", "tka", "ctka"]
+            each_length = [True]
             gamma_method = [
                 ("median", 0.2, None),
                 ("median", 0.4, None),
@@ -157,6 +160,7 @@ def get_params(case: int):
             normalized = [True]
             noise = np.logspace(-3, 1, 10)
             method = ["hsic", "tka", "ctka"]
+            each_length = [True]
             gamma_method = [
                 ("median", 0.2, None),
                 ("median", 0.4, None),
@@ -235,6 +239,7 @@ class ScaleExperiment:
         Y: np.ndarray,
         method: str,
         gamma_init: Tuple[str, Optional[float], Optional[float]],
+        each_length: bool = False,
     ) -> float:
         """Apply HSIC estimator using one of the 3 algorithms:
         * HSIC
@@ -242,10 +247,39 @@ class ScaleExperiment:
         * cKA
         """
         # initialize the gamma parameter
-        gamma_init = get_gamma_init(X, Y, gamma_init[0], gamma_init[1], gamma_init[2])
+        if each_length == True:
+            gamma_init_X, gamma_init_Y = get_gamma_init(
+                X,
+                Y,
+                method=gamma_init[0],
+                percent=gamma_init[1],
+                scale=gamma_init[2],
+                each_length=True,
+            )
 
-        # get hsic_value
-        hsic_value = get_hsic(X, Y, method, gamma_init, maximum=False)
+            # get hsic_value
+            hsic_value = get_hsic(
+                X=X,
+                Y=Y,
+                scorer=method,
+                gamma_init_X=gamma_init_X,
+                gamma_init_Y=gamma_init_Y,
+                maximum=False,
+            )
+        elif each_length == False:
+            gamma_init = get_gamma_init(
+                X,
+                Y,
+                method=gamma_init[0],
+                percent=gamma_init[1],
+                scale=gamma_init[2],
+                each_length=False,
+            )
+
+            # get hsic_value
+            hsic_value = get_hsic(X, Y, method, gamma_init, maximum=False)
+        else:
+            raise ValueError(f"Unrecognized selection for each_length: {each_length}")
 
         return hsic_value
 
@@ -259,6 +293,7 @@ class ScaleExperiment:
         normalize: bool,
         method: str,
         gamma_init: Tuple[str, Optional[float], Optional[float]],
+        each_length: bool = False,
     ) -> pd.DataFrame:
 
         # Step I - Extract Data
@@ -274,7 +309,9 @@ class ScaleExperiment:
         mi = self._apply_mi_estimate(X, Y)
 
         # Step IV - Estimate HSIC value
-        hsic_value = self._apply_hsic_estimate(X, Y, method, gamma_init)
+        hsic_value = self._apply_hsic_estimate(
+            X, Y, method=method, gamma_init=gamma_init, each_length=each_length
+        )
 
         # Step V - Save Results to dataframe
         results_df = results_df.append(
@@ -288,6 +325,7 @@ class ScaleExperiment:
                 "hsic_value": hsic_value,
                 "mi": mi,
                 "noise": noise,
+                "each": each_length,
             },
             ignore_index=True,
         )
@@ -305,24 +343,26 @@ class ScaleExperiment:
                 for iseed in self.exp_params.seed:
                     for inoise in self.exp_params.noise:
                         for inormalize in self.exp_params.normalized:
-                            for igamma in self.exp_params.gamma_method:
-                                for imethod in self.exp_params.method:
-                                    results_df = self._experiment_step(
-                                        results_df=results_df,
-                                        dataset=idataset,
-                                        noise=inoise,
-                                        seed=iseed,
-                                        scale=iscale,
-                                        normalize=inormalize,
-                                        method=imethod,
-                                        gamma_init=igamma,
-                                    )
+                            for ilength in self.exp_params.each_length:
+                                for igamma in self.exp_params.gamma_method:
+                                    for imethod in self.exp_params.method:
+                                        results_df = self._experiment_step(
+                                            results_df=results_df,
+                                            dataset=idataset,
+                                            noise=inoise,
+                                            seed=iseed,
+                                            scale=iscale,
+                                            normalize=inormalize,
+                                            method=imethod,
+                                            gamma_init=igamma,
+                                            each_length=ilength,
+                                        )
 
-                                results_df.to_csv(
-                                    PROJECT_PATH
-                                    + SAVE_PATH
-                                    + f"exp_scale_c{args.case}_{args.save}.csv"
-                                )
+                                    results_df.to_csv(
+                                        PROJECT_PATH
+                                        + SAVE_PATH
+                                        + f"exp_scale_c{args.case}_{args.save}.csv"
+                                    )
 
         return results_df
 
