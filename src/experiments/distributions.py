@@ -85,86 +85,86 @@ def main(args):
     # results dataframe
     results_df = pd.DataFrame()
 
-    # loop through datasets
-    for idataset in datasets:
-        # run experiment
-        with tqdm(gamma_methods) as gamma_bar:
+    # # loop through datasets
+    # for idataset in datasets:
+    # run experiment
+    with tqdm(gamma_methods) as gamma_bar:
 
-            # Loop through Gamma params
-            for imethod in gamma_bar:
-                # Loop through samples
-                for isample in samples:
+        # Loop through Gamma params
+        for imethod in gamma_bar:
+            # Loop through samples
+            for isample in samples:
 
-                    # Loop through dimensions
-                    for idim in dimensions:
+                # Loop through dimensions
+                for idim in dimensions:
 
-                        # Loop through trials
-                        for itrial in trials:
+                    # Loop through trials
+                    for itrial in trials:
 
-                            # Loop through HSIC scorers
-                            for iscorer in scorers:
+                        # # Loop through HSIC scorers
+                        # for iscorer in scorers:
 
-                                # extract dataset
-                                if idataset == "gauss":
-                                    dof_params = std_params
-                                elif idataset == "tstudent":
-                                    dof_params = nu_params
-                                else:
-                                    raise ValueError(
-                                        f"Unrecognized dataset: {idataset}"
-                                    )
+                        # extract dataset
+                        if args.dataset == "gauss":
+                            dof_params = std_params
+                        elif args.dataset == "tstudent":
+                            dof_params = nu_params
+                        else:
+                            raise ValueError(f"Unrecognized dataset: {idataset}")
 
-                                # Loop through dof params
-                                for idof in dof_params:
+                        # Loop through dof params
+                        for idof in dof_params:
 
-                                    X, Y, mi_val = MIData(idataset).get_data(
-                                        samples=isample,
-                                        dimensions=idim,
-                                        std=idof,
-                                        nu=idof,
-                                        trial=itrial,
-                                    )
+                            X, Y, mi_val = MIData(args.dataset).get_data(
+                                samples=isample,
+                                dimensions=idim,
+                                std=idof,
+                                nu=idof,
+                                trial=itrial,
+                            )
 
-                                    # initialize gamma
-                                    if imethod[0] == "max":
-                                        hsic_value = get_hsic(
-                                            X,
-                                            Y,
-                                            iscorer,
-                                            gamma_init,
-                                            maximum=True,
-                                            n_gamma=n_gamma,
-                                            factor=factor,
-                                        )
-                                    else:
-                                        gamma_init = get_gamma_init(
-                                            X, Y, imethod[0], imethod[1], imethod[2]
-                                        )
-                                        hsic_value = get_hsic(X, Y, iscorer, gamma_init)
+                            # initialize gamma
+                            if imethod[0] == "max":
+                                hsic_value = get_hsic(
+                                    X,
+                                    Y,
+                                    iscorer,
+                                    gamma_init,
+                                    maximum=True,
+                                    n_gamma=n_gamma,
+                                    factor=factor,
+                                )
+                            else:
+                                gamma_init = get_gamma_init(
+                                    X, Y, imethod[0], imethod[1], imethod[2]
+                                )
+                                hsic_value = get_hsic(X, Y, args.scorer, gamma_init)
 
-                                    gamma_name = get_gamma_name(imethod)
+                            gamma_name = get_gamma_name(imethod)
 
-                                    # append results to dataframe
-                                    results_df = results_df.append(
-                                        {
-                                            "dataset": idataset,
-                                            "samples": isample,
-                                            "dimensions": idim,
-                                            "trial": itrial,
-                                            "scorer": iscorer,
-                                            "gamma_method": gamma_name,
-                                            "gamma_init": gamma_init,
-                                            "hsic_value": hsic_value,
-                                            "dof": idof,
-                                            "mi_value": mi_val,
-                                        },
-                                        ignore_index=True,
-                                    )
+                            # append results to dataframe
+                            results_df = results_df.append(
+                                {
+                                    "dataset": args.dataset,
+                                    "samples": isample,
+                                    "dimensions": idim,
+                                    "trial": itrial,
+                                    "scorer": args.scorer,
+                                    "gamma_method": gamma_name,
+                                    "gamma_init": gamma_init,
+                                    "hsic_value": hsic_value,
+                                    "dof": idof,
+                                    "mi_value": mi_val,
+                                },
+                                ignore_index=True,
+                            )
 
-                                    # save results
-                                    results_df.to_csv(f"{SAVE_PATH}{args.save}.csv")
-                        postfix = dict(Samples=f"{isample}", Dimensions=f"{idim}")
-                        gamma_bar.set_postfix(postfix)
+                            # save results
+                            results_df.to_csv(
+                                f"{SAVE_PATH}{args.dataset}_{args.scorer}_{args.save}.csv"
+                            )
+                postfix = dict(Samples=f"{isample}", Dimensions=f"{idim}")
+                gamma_bar.set_postfix(postfix)
     results_df.head()
     return None
 
@@ -187,6 +187,17 @@ if __name__ == "__main__":
         default=1,
         help="Factor to be used for bounds for gamma parameter.",
     )
+
+    parser.add_argument(
+        "--scorer", type=str, default="hsic", help="HSIC method to be used"
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="gauss",
+        help="Sample Dataset to be used for experiment",
+    )
+
     parser.add_argument(
         "--save", type=str, default="dist_v2_gamma", help="Save name for final data."
     )

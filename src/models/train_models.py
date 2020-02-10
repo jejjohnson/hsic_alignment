@@ -10,6 +10,7 @@ def get_hsic(
     scorer: str,
     gamma_init_X: float,
     gamma_init_Y: Optional[float] = None,
+    subsample: int = 1_000,
     maximum: bool = False,
     n_gamma: int = 50,
     factor: int = 1,
@@ -48,7 +49,6 @@ def get_hsic(
     """
     # hsic parameters
     kernel = "rbf"
-    subsample = None
     bias = True
 
     # cross val parameters

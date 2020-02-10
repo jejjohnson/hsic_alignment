@@ -122,8 +122,8 @@ class HSIC(BaseEstimator):
 
         # subsample data if necessary
         if self.subsample is not None:
-            X = self.rng.permutation(X)[: self.subsample, :]
-            Y = self.rng.permutation(Y)[: self.subsample, :]
+            X = self.rng.permutation(X)[:self.subsample, :]
+            Y = self.rng.permutation(Y)[:self.subsample, :]
 
         self.X_train_ = X
         self.Y_train_ = Y
