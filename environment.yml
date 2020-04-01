@@ -1,10 +1,9 @@
-
 name: hsic_align
 channels:
 - defaults
 - conda-forge
 dependencies:
-- python=3.6
+- python=3.8
 # Standard Libraries
 - numpy             # Numerical Linear Algebra
 - scipy             # Scientific Computing
@@ -16,12 +15,13 @@ dependencies:
 - matplotlib        # standard plotting library
 - seaborn           # Stats viz library
 # Storage
-- hdf5==2.10.0      # standard large storage h5
+- hdf5              # standard large storage h5
 - pytables          # high-level storage h5
 # GUI
 - ipykernel         # Be seen in other jupyterlabs
 - nodejs            # for extensions in jupyterlab
 - tqdm              # Progress bars
+- ipywidgets #
 # Testing
 - pytest            # Modern Testing
 # Formatter

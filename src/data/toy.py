@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.utils import check_random_state
 from typing import Tuple
 from scipy.stats import norm, uniform, ortho_group, entropy as sci_entropy
+from sklearn import preprocessing
 from sklearn.preprocessing import StandardScaler
 
 
@@ -404,6 +405,8 @@ def generate_dependence_data(
     noise_y: float = 0.1,
     alpha: float = 1.0,
     beta: float = 1.0,
+    norm_x: bool = False,
+    norm_y: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Generates sample datasets to go along with a demo for paper.
     Each dataset corresponds to a different measure of correlation
@@ -455,7 +458,7 @@ def generate_dependence_data(
     rng_x = check_random_state(seed)
     rng_y = check_random_state(seed + 1)
 
-    if dataset.lower() in ["line", 'linear']:
+    if dataset.lower() in ["line", "linear"]:
         X = rng_x.rand(num_points, 1)
         Y = X + noise_y * rng_y.randn(num_points, 1)
 
@@ -478,6 +481,12 @@ def generate_dependence_data(
     # scale data
     X *= alpha
     Y *= beta
+
+    # normalize data
+    if norm_x == True:
+        X = preprocessing.scale(X)
+    if norm_y == True:
+        Y = preprocessing.scale(Y)
 
     # return X, Y
     return X, Y
@@ -547,14 +556,13 @@ def entropy(hist_counts, correction=None):
 
 def bin_estimation(n_samples, rule="standard"):
 
-    if rule is "sturge":
+    if rule == "sturge":
         n_bins = int(np.ceil(1 + 3.322 * np.log10(n_samples)))
 
-    elif rule is "standard":
+    elif rule == "standard":
         n_bins = int(np.ceil(np.sqrt(n_samples)))
 
     else:
         raise ValueError(f"Unrecognized bin estimation rule: {rule}")
 
     return n_bins
-

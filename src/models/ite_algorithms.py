@@ -2,12 +2,22 @@ import sys, os
 
 sys.path.insert(0, "/home/emmanuel/code/rbig")
 
+from typing import Optional
+import collections
 from rbig.rbig import RBIG, RBIGMI, RBIGKLD
 import numpy as np
 import time
 
+RBIGResults = collections.namedtuple("RBIGRES", ["h", "tc", "mi", "kld", "time"])
 
-def run_rbig_models(X1, X2=None, measure="t", verbose=None, random_state=123):
+
+def run_rbig_models(
+    X1: np.ndarray,
+    X2: Optional[np.ndarray] = None,
+    measure: str = "t",
+    verbose: bool = False,
+    random_state: Optional[int] = 123,
+):
 
     # RBIG Parameters
     n_layers = 10000
@@ -43,10 +53,13 @@ def run_rbig_models(X1, X2=None, measure="t", verbose=None, random_state=123):
             print(
                 f"Trained RBIG ({X1.shape[0]:,} points, {X1.shape[1]:,} dimensions): {t1:.3f} secs"
             )
-            print(f"TC: {tc:.3f}")
-            print(f"H: {h:.3f}")
+            print(f"Total Correlation: {tc:.3f}")
+            print(f"Entropy: {h:.3f}")
 
-        return tc, h, t1
+        # save rbig results
+        results = RBIGResults(mi=None, h=h, tc=tc, time=t1)
+
+        return results
 
     elif measure.lower() == "mi":
         # RBIG MODEL 0
@@ -72,9 +85,11 @@ def run_rbig_models(X1, X2=None, measure="t", verbose=None, random_state=123):
             print(
                 f"Trained RBIG1 MI ({X1.shape[0]:,} points, {X1.shape[1]:,} dimensions): {t1:.3f} secs"
             )
-            print(f"MI: {mi:.3f}")
+            print(f"Mutual Information: {mi:.3f}")
+        # save rbig results
+        results = RBIGResults(mi=mi, h=None, tc=None, time=t1)
 
-        return mi, t1
+        return results
 
     elif measure.lower() == "kld":
 
@@ -94,15 +109,18 @@ def run_rbig_models(X1, X2=None, measure="t", verbose=None, random_state=123):
         rbig_kld_model.fit(X1, X2)
         t1 = time.time() - t0
 
-        print(
-            f"Trained RBIG KLD ({X1.shape[0]:,}, {X2.shape[0]:,} points): {t1:.3f} secs"
-        )
-
         kld = rbig_kld_model.kld * np.log(2)
 
-        print(f"KLD: {kld:.3f}")
+        if verbose:
+            print(
+                f"Trained RBIG KLD ({X1.shape[0]:,}, {X2.shape[0]:,} points): {t1:.3f} secs"
+            )
+            print(f"KL Divergence: {kld:.3f}")
 
-        return kld, t1
+        # save rbig results
+        results = RBIGResults(mi=mi, h=None, tc=None, kld=kld, time=t1)
+
+        return results
 
     else:
         raise ValueError(f"Unrecognized measure: {measure}.")
