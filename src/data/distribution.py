@@ -74,7 +74,7 @@ class DataParams:
         """Helper function to generate data using the 
         parameters above."""
         # initialize dataloader
-        dataloader = DistData(distribution=self.dataset)
+        dataloader = DistributionData(distribution=self.dataset)
 
         # return dataset
         return dataloader.get_data(
@@ -86,7 +86,7 @@ class DataParams:
         )
 
 
-class DistData:
+class DistributionData:
     """MI Data
     
     
