@@ -1,20 +1,21 @@
-import sys, os
-import warnings
-import tqdm
-import random
-import pandas as pd
-import numpy as np
 import argparse
+import os
+import random
+import sys
+import warnings
+
+import numpy as np
+import pandas as pd
+import tqdm
 
 # toy datasets
 from data.toy import generate_dependence_data
-
 # Kernel Dependency measure
 from models.dependence import HSIC
-from models.kernel import estimate_sigma, sigma_to_gamma, gamma_to_sigma, get_param_grid
-
 # RBIG IT measures
 from models.ite_algorithms import run_rbig_models
+from models.kernel import (estimate_sigma, gamma_to_sigma, get_param_grid,
+                           sigma_to_gamma)
 
 warnings.filterwarnings("ignore")  # get rid of annoying warnings
 

@@ -4,8 +4,9 @@ NOTE! Need the mypy (typing) and joblib (parallel) packages
 >>> !pip install joblib mypy
 """
 import itertools
+from typing import Callable, Dict, Iterable, List, Union
+
 from joblib import Parallel, delayed
-from typing import Dict, Callable, Union, List, Iterable
 
 
 def dict_product(dicts: Dict) -> List[Dict]:

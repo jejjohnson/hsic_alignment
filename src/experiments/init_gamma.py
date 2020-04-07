@@ -1,26 +1,28 @@
-import sys, os
-import warnings
-import tqdm
+import os
 import random
-import pandas as pd
-import numpy as np
+import sys
+import warnings
 
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import tqdm
+
+# toy datasets
+from data.toy import generate_dependence_data
+# Kernel Dependency measure
+from models.dependence import HSIC, train_hsic
+from models.kernel import (estimate_sigma, gamma_to_sigma, get_param_grid,
+                           sigma_to_gamma)
 
 # Insert path to model directory,.
 cwd = os.getcwd()
 path = f"{cwd}/../../src"
 sys.path.insert(0, path)
 
-# toy datasets
-from data.toy import generate_dependence_data
 
-# Kernel Dependency measure
-from models.dependence import HSIC, train_hsic
-from models.kernel import estimate_sigma, sigma_to_gamma, gamma_to_sigma, get_param_grid
 
-import matplotlib.pyplot as plt
 
 
 def plot_max_hsic(

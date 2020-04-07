@@ -1,4 +1,23 @@
-import sys, os
+import argparse
+# Logging
+import logging
+import os
+import sys
+from typing import Optional, Tuple, Type
+
+import numpy as np
+# Standard Packages
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_random_state
+
+# toy datasets
+from data.toy import generate_dependence_data
+from models.ite_algorithms import run_rbig_models
+from models.kernel import (estimate_sigma, gamma_to_sigma, get_param_grid,
+                           sigma_to_gamma)
+# Kernel Dependency measure
+from models.train_models import get_gamma_init, get_hsic
 
 # Insert path to model directory,.
 cwd = os.getcwd()
@@ -6,26 +25,10 @@ path = f"/home/emmanuel/projects/2019_hsic_align/src"
 sys.path.insert(0, path)
 
 
-from typing import Tuple, Type, Optional
 
-# Standard Packages
-import pandas as pd
-import numpy as np
-import argparse
-from sklearn.utils import check_random_state
 
-# toy datasets
-from data.toy import generate_dependence_data
 
-# Kernel Dependency measure
-from models.train_models import get_gamma_init
-from models.train_models import get_hsic
-from models.kernel import estimate_sigma, sigma_to_gamma, gamma_to_sigma, get_param_grid
-from models.ite_algorithms import run_rbig_models
-from sklearn.preprocessing import StandardScaler
 
-# Logging
-import logging
 
 
 PROJECT_PATH = "/home/emmanuel/projects/2019_hsic_align/"

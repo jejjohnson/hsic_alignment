@@ -7,7 +7,7 @@ sys.path.insert(0, pysim_path)
 # Kernel Dependency measure
 from pysim.kernel.hsic import HSIC
 import numpy as np
-from typing import Optional, Callable, Union, List, Tuple
+from typing import Optional, Callable, Union, List, Tuple, Dict
 from dataclasses import dataclass
 
 
@@ -50,11 +50,14 @@ class HSICModel:
     0.00042726396990996684
     """
 
-    kernel: str = "rbf"
+    kernel_X: str = "rbf"
+    kernel_Y: Optional[str] = "rbf"
     bias: bool = True
     gamma_X: Optional[float] = None
     gamma_Y: Optional[float] = None
     subsample: Optional[int] = None
+    kernel_kwargs_X: Optional[Dict] = None
+    kernel_kwargs_Y: Optional[Dict] = None
 
     def get_score(
         self, X: np.ndarray, Y: np.ndarray, method: str = "hsic", **kwargs
@@ -94,12 +97,15 @@ class HSICModel:
 
         # initialize HSIC model
         clf_hsic = HSIC(
-            kernel=self.kernel,
+            kernel_X=self.kernel_X,
+            kernel_Y=self.kernel_Y,
             center=self.center,
             subsample=self.subsample,
             bias=self.bias,
             gamma_X=self.gamma_X,
             gamma_Y=self.gamma_Y,
+            kernel_params_X=self.kernel_kwargs_X,
+            kernel_params_Y=self.kernel_kwargs_Y,
             **kwargs,
         )
 

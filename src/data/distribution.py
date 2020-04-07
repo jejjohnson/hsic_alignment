@@ -2,6 +2,7 @@ from typing import Optional, NamedTuple
 import scipy.io as scio
 import collections
 from dataclasses import dataclass
+from sklearn.preprocessing import StandardScaler
 import numpy as np
 
 
@@ -18,6 +19,7 @@ class Inputs(NamedTuple):
     X: np.ndarray
     Y: np.ndarray
     mutual_info: float
+    standardize: bool
 
 
 @dataclass
@@ -49,6 +51,7 @@ class DataParams:
     std: int = 1
     trial: int = 1
     nu: int = 1
+    standardize: bool = True
 
     def __str__(self):
         return (
@@ -77,12 +80,21 @@ class DataParams:
         dataloader = DistributionData(distribution=self.dataset)
 
         # return dataset
-        return dataloader.get_data(
+        X, Y, mutual_info = dataloader.get_data(
             samples=self.samples,
             dimensions=self.dimensions,
             std=self.std,
             nu=self.nu,
             trial=self.trial,
+        )
+
+        # standardize
+        if self.standardize == True:
+            X = StandardScaler().fit_transform(X)
+            Y = StandardScaler().fit_transform(Y)
+
+        return Inputs(
+            X=X, Y=Y, mutual_info=float(mutual_info), standardize=self.standardize
         )
 
 
@@ -128,6 +140,4 @@ class DistributionData:
         else:
             raise ValueError(f"Unrecognized distribution '{self.distribution}'")
 
-        return Inputs(
-            X=dat["X"], Y=dat["Y"], mutual_info=float(dat["MI_ori_nats"][0][0])
-        )
+        return dat["X"], dat["Y"], dat["MI_ori_nats"][0][0]

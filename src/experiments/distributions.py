@@ -1,207 +1,179 @@
-import sys, os
-import warnings
-from tqdm import tqdm
-import random
-import pandas as pd
-import numpy as np
+import os
+
+# Insert path to model directory...
+cwd = os.getcwd()
+project_path = f"/home/emmanuel/projects/2019_hsic_align/src"
+sys.path.insert(0, project_path)
+
+# Insert path to package...
+pysim_path = f"/home/emmanuel/code/pysim/"
+sys.path.insert(0, pysim_path)
+
 import argparse
+import collections
+import random
+import sys
+import warnings
+from typing import Dict
+
+import numpy as np
+import pandas as pd
+from sklearn.gaussian_process.kernels import RBF
 from sklearn.utils import check_random_state
+from tqdm import tqdm
 
 # toy datasets
-from data.it_data import MIData
+from data.distribution import DataParams, Inputs
+
+# experiment utilities
+from experiments.utils import dict_product, run_parallel_step
 
 # Kernel Dependency measure
-from models.train_models import get_gamma_init
-from models.train_models import get_hsic
-
-# RBIG IT measures
-from models.ite_algorithms import run_rbig_models
-
-warnings.filterwarnings("ignore")  # get rid of annoying warnings
-
-SAVE_PATH = "/home/emmanuel/projects/2019_hsic_align/results/distribution/"
+from models.dependence import HSICModel
+from pysim.kernel.utils import GammaParam, SigmaParam
 
 
-from typing import Tuple
+def get_parameters(dataset: str = "gauss") -> Dict:
+    # initialize parameters
+    parameters = {
+        # standard dataset parameters
+        "trials": [1, 2, 3, 4, 5],
+        "samples": [50, 100, 500, 1_000, 5_000],
+        "dimensions": [2, 3, 10, 50, 100],
+        # dataset modification params
+        "standardize": [True, False],
+        # HSIC method params
+        "scorers": ["hsic", "ka", "cka"],
+        # Sigma estimation parameters
+        "sigma_estimators": [
+            SigmaParam("silverman", None, None),
+            SigmaParam("scott", None, None),
+            *[
+                SigmaParam("median", x, d)
+                for x in np.arange(0.1, 1.0, 0.1, dtype=np.float64)
+                for d in [True, False]
+            ],
+        ],
+    }
 
-
-def get_gamma_name(gamma_method: Tuple[str, str, str]) -> str:
-    if gamma_method[1] is None and gamma_method[2] is None:
-        gamma_name = gamma_method[0]
-    elif gamma_method[1] is not None and gamma_method[2] is None:
-        gamma_name = f"{gamma_method[0]}_p{gamma_method[1]}"
-    elif gamma_method[1] is None and gamma_method[2] is not None:
-        gamma_name = f"{gamma_method[0]}_s{gamma_method[2]}"
-    elif gamma_method[1] is not None and gamma_method[2] is not None:
-        gamma_name = f"{gamma_method[0]}_s{gamma_method[1]}_s{gamma_method[2]}"
+    # add specific params
+    if dataset == "gauss":
+        parameters["dataset"] = [
+            "gauss",
+        ]
+        parameters["std"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        parameters["nu"] = [1]
+    elif dataset == "tstudent":
+        parameters["dataset"] = [
+            "tstudent",
+        ]
+        parameters["nu"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        parameters["std"] = [1]
     else:
-        raise ValueError("Unrecognized Combination...")
-    return gamma_name
+        raise ValueError("Unrecognized dataset: ", {dataset})
+    return list(dict_product(parameters))
+
+
+def step(params: Dict):
+    # ================
+    # DATA
+    # ================
+    dist_data = DataParams()
+
+    # set params
+    dist_data.dataset = params["dataset"]
+    dist_data.trials = params["trials"]
+    dist_data.std = params["std"]
+    dist_data.nu = params["nu"]
+    dist_data.samples = params["samples"]
+    dist_data.dimensions = params["dimensions"]
+    dist_data.standardize = params["standardize"]
+
+    # generate data
+    inputs = dist_data.generate_data()
+
+    # ====================
+    # Sigma Estimator
+    # ====================
+
+    # estimate sigma
+    sigma_X = params["sigma_estimators"].estimate_sigma(X=inputs.X,)
+    sigma_Y = params["sigma_estimators"].estimate_sigma(X=inputs.Y,)
+
+    # ====================
+    # HSIC Model
+    # ====================
+
+    # init hsic model class
+    hsic_model = HSICModel()
+
+    # hsic model params
+    hsic_model.kernel_X = RBF(sigma_X)
+    hsic_model.kernel_Y = RBF(sigma_Y)
+
+    # get hsic score
+    score = hsic_model.get_score(inputs.X, inputs.Y, params["scorers"])
+
+    # ====================
+    # Results
+    # ====================
+
+    # create dataframe
+    results_df = pd.DataFrame(
+        {
+            # Data Params
+            "dataset": [params["dataset"]],
+            "trials": [params["trials"]],
+            "std": [params["std"]],
+            "nu": [params["nu"]],
+            "samples": [params["samples"]],
+            "dimensions": [params["dimensions"]],
+            "standardize": [params["standardize"]],
+            # Sigma Params
+            "sigma_method": [params["sigma_estimators"].method],
+            "sigma_percent": [params["sigma_estimators"].percent],
+            "per_dimensions": [params["sigma_estimators"].per_dimension],
+            "sigma_X": [sigma_X],
+            "sigma_Y": [sigma_Y],
+            # HSIC Params
+            "scorer": [params["scorers"]],
+            "score": [score],
+            "mutual_info": [inputs.mutual_info],
+        }
+    )
+    return results_df
 
 
 def main(args):
 
-    # clf_exp = DistributionExp(
-    #     seed=args.seed,
-    #     factor=args.factor,
-    #     sigma_est=args.sigma,
-    #     n_gamma=args.gamma,
-    #     save_path=SAVE_PATH,
-    #     save_name=args.save,
-    # )
+    results_df = run_parallel_step(
+        exp_step=step,
+        parameters=get_parameters(args.dataset),
+        n_jobs=args.njobs,
+        verbose=args.verbose,
+    )
 
-    # # run full experiment
-    # clf_exp.run_experiment()
-
-    # dataset params
-    datasets = ["tstudent", "gauss"]
-    samples = [50, 100, 500, 1_000, 5_000]
-    dimensions = [2, 3, 10, 50, 100]
-    trials = np.linspace(1, 5, 5, endpoint=True, dtype=int)
-
-    # max params
-    n_gamma = args.gamma
-    factor = args.factor
-
-    # experimental parameters
-    scorers = ["hsic", "tka", "ctka"]
-    gamma_methods = [
-        ("silverman", None, None),
-        ("scott", None, None),
-        ("median", 0.2, None),
-        ("median", 0.4, None),
-        ("median", None, None),
-        ("median", 0.6, None),
-        ("median", 0.8, None),
-        ("median", None, 0.01),
-        ("median", None, 0.1),
-        ("median", None, 10),
-        ("median", None, 100),
-        #     ('max', None, None)
-    ]
-    std_params = np.linspace(1, 11, 11, endpoint=True, dtype=int)
-    nu_params = np.linspace(1, 9, 9, endpoint=True, dtype=int)
-
-    # results dataframe
-    results_df = pd.DataFrame()
-
-    # # loop through datasets
-    # for idataset in datasets:
-    # run experiment
-    with tqdm(gamma_methods) as gamma_bar:
-
-        # Loop through Gamma params
-        for imethod in gamma_bar:
-            # Loop through samples
-            for isample in samples:
-
-                # Loop through dimensions
-                for idim in dimensions:
-
-                    # Loop through trials
-                    for itrial in trials:
-
-                        # # Loop through HSIC scorers
-                        # for iscorer in scorers:
-
-                        # extract dataset
-                        if args.dataset == "gauss":
-                            dof_params = std_params
-                        elif args.dataset == "tstudent":
-                            dof_params = nu_params
-                        else:
-                            raise ValueError(f"Unrecognized dataset: {idataset}")
-
-                        # Loop through dof params
-                        for idof in dof_params:
-
-                            X, Y, mi_val = MIData(args.dataset).get_data(
-                                samples=isample,
-                                dimensions=idim,
-                                std=idof,
-                                nu=idof,
-                                trial=itrial,
-                            )
-
-                            # initialize gamma
-                            if imethod[0] == "max":
-                                hsic_value = get_hsic(
-                                    X,
-                                    Y,
-                                    iscorer,
-                                    gamma_init,
-                                    maximum=True,
-                                    n_gamma=n_gamma,
-                                    factor=factor,
-                                )
-                            else:
-                                gamma_init = get_gamma_init(
-                                    X, Y, imethod[0], imethod[1], imethod[2]
-                                )
-                                hsic_value = get_hsic(X, Y, args.scorer, gamma_init)
-
-                            gamma_name = get_gamma_name(imethod)
-
-                            # append results to dataframe
-                            results_df = results_df.append(
-                                {
-                                    "dataset": args.dataset,
-                                    "samples": isample,
-                                    "dimensions": idim,
-                                    "trial": itrial,
-                                    "scorer": args.scorer,
-                                    "gamma_method": gamma_name,
-                                    "gamma_init": gamma_init,
-                                    "hsic_value": hsic_value,
-                                    "dof": idof,
-                                    "mi_value": mi_val,
-                                },
-                                ignore_index=True,
-                            )
-
-                            # save results
-                            results_df.to_csv(
-                                f"{SAVE_PATH}{args.dataset}_{args.scorer}_{args.save}.csv"
-                            )
-                postfix = dict(Samples=f"{isample}", Dimensions=f"{idim}")
-                gamma_bar.set_postfix(postfix)
-    results_df.head()
-    return None
+    # save results
+    results_df = pd.concat(results_df, ignore_index=True)
+    results_df.to_csv(f"{RES_PATH}{args.save}_{args.dataset}.csv")
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="HSIC Measures Experiment")
+
+    parser.add_argument("--dataset", type=str, default="gauss", help="The dataset")
+
     parser.add_argument(
-        "--seed", type=int, default=123, help="The random state for data generation."
-    )
-    parser.add_argument(
-        "--gamma",
-        type=int,
-        default=50,
-        help="Number of points in gamma parameter grid.",
-    )
-    parser.add_argument(
-        "--factor",
-        type=int,
-        default=1,
-        help="Factor to be used for bounds for gamma parameter.",
+        "--save", type=str, default="dist_exp_v1", help="Save name for final data"
     )
 
     parser.add_argument(
-        "--scorer", type=str, default="hsic", help="HSIC method to be used"
-    )
-    parser.add_argument(
-        "--dataset",
-        type=str,
-        default="gauss",
-        help="Sample Dataset to be used for experiment",
+        "--njobs", type=int, default=16, help="number of processes in parallel",
     )
 
     parser.add_argument(
-        "--save", type=str, default="dist_v2_gamma", help="Save name for final data."
+        "--verbose", type=int, default=1, help="Number of helpful print statements."
     )
-
     args = parser.parse_args()
 
     main(args)
