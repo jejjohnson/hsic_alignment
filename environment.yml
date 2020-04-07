@@ -9,14 +9,9 @@ dependencies:
 - scipy             # Scientific Computing
 - pandas            # Data structure
 - scikit-learn      # Machine Learning
-- scikit-image      # Image Processing
-- statsmodels       # Statistical Learning
 # Plotting Libraries
 - matplotlib        # standard plotting library
 - seaborn           # Stats viz library
-# Storage
-- hdf5              # standard large storage h5
-- pytables          # high-level storage h5
 # GUI
 - ipykernel         # Be seen in other jupyterlabs
 - nodejs            # for extensions in jupyterlab
@@ -25,7 +20,10 @@ dependencies:
 # Testing
 - pytest            # Modern Testing
 # Formatter
-- black                      # Uncompromising formatter
+- black             # Uncompromising formatter
+- isort             # sorts packages
+- flake8
+- pylint
 # Gaussian Processes
 - pip
 - pip:

@@ -105,11 +105,7 @@ def step(params: Dict):
     # ====================
 
     # init hsic model class
-    hsic_model = HSICModel()
-
-    # hsic model params
-    hsic_model.kernel_X = RBF(sigma_X)
-    hsic_model.kernel_Y = RBF(sigma_Y)
+    hsic_model = HSICModel(kernel_X=RBF(sigma_X), kernel_Y=RBF(sigma_Y))
 
     # get hsic score
     score = hsic_model.get_score(inputs.X, inputs.Y, params["scorers"])
