@@ -16,7 +16,7 @@ dependencies:
 - ipykernel         # Be seen in other jupyterlabs
 - nodejs            # for extensions in jupyterlab
 - tqdm              # Progress bars
-- ipywidgets #
+- ipywidgets        #
 # Testing
 - pytest            # Modern Testing
 # Formatter
