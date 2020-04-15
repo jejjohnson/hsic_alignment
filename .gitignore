@@ -3,7 +3,7 @@
 .idea/
 
 *.png
-*.csv 
+*.csv
 *.log
 \data/*
 \results/distribution/*

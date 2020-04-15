@@ -16,6 +16,9 @@ import random
 import pandas as pd
 import numpy as np
 import argparse
+import random
+
+random.seed(123)
 
 # toy datasets
 from data.distribution import DataParams, Inputs
@@ -25,6 +28,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.gaussian_process.kernels import RBF
 from models.dependence import HSICModel
 from pysim.kernel.utils import estimate_sigma
+
 
 # RBIG IT measures
 # from models.ite_algorithms import run_rbig_models
@@ -46,13 +50,9 @@ RES_PATH = (
 )
 
 
-def get_parameters(dataset: str = "gauss") -> Dict:
+def get_parameters(dataset: str = "gauss", shuffle: bool = True) -> Dict:
     # initialize parameters
-    parameters = {
-        # standard dataset parameters
-        "trial": [1, 2, 3, 4, 5],
-        "samples": [50, 100, 500, 1_000, 5_000],
-        "dimensions": [2, 3, 10, 50, 100],
+    params = {
         # dataset modification params
         "standardize": [True, False],
         "separate_scales": [True, False],
@@ -69,20 +69,35 @@ def get_parameters(dataset: str = "gauss") -> Dict:
 
     # add specific params
     if dataset == "gauss":
-        parameters["dataset"] = [
-            "gauss",
-        ]
-        parameters["std"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-        parameters["nu"] = [1]
+        # standard dataset parameters
+        data_params = {
+            "trial": [1, 2, 3, 4, 5],
+            "samples": [50, 100, 500, 1_000, 5_000],
+            "dimensions": [2, 3, 10, 50, 100],
+            "dataset": ["gauss"],
+            "std": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            "nu": [1],
+        }
     elif dataset == "tstudent":
-        parameters["dataset"] = [
-            "tstudent",
-        ]
-        parameters["nu"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        parameters["std"] = [1]
+        # standard dataset parameters
+        data_params = {
+            "trial": [1, 2, 3, 4, 5],
+            "samples": [50, 100, 500, 1_000, 5_000],
+            "dimensions": [2, 3, 10, 50, 100],
+            "dataset": ["tstudent"],
+            "std": [1],
+            "nu": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        }
     else:
         raise ValueError("Unrecognized dataset: ", {dataset})
-    return list(dict_product(parameters))
+
+    # shuffle parameters
+    params = list(dict_product(params))
+    data_params = list(dict_product(data_params))
+
+    params = random.sample(params, len(params))
+    data_params = random.sample(data_params, len(data_params))
+    return params, data_params
 
 
 def get_hsic(
@@ -153,21 +168,7 @@ def standardize_data(
     return X, Y
 
 
-def step(params: Dict):
-    # ================
-    # DATA
-    # ================
-    dist_data = DataParams(
-        dataset=params["dataset"],
-        trial=params["trial"],
-        std=params["std"],
-        nu=params["nu"],
-        samples=params["samples"],
-        dimensions=params["dimensions"],
-    )
-
-    # generate data
-    inputs = dist_data.generate_data()
+def step(params: Dict, data_params: Dict, inputs):
 
     # ====================
     # Sigma Estimator
@@ -197,18 +198,20 @@ def step(params: Dict):
     results_df = pd.DataFrame(
         {
             # Data Params
-            "dataset": [params["dataset"]],
-            "trial": [params["trial"]],
-            "std": [params["std"]],
-            "nu": [params["nu"]],
-            "samples": [params["samples"]],
-            "dimensions": [params["dimensions"]],
+            "dataset": [data_params["dataset"]],
+            "trial": [data_params["trial"]],
+            "std": [data_params["std"]],
+            "nu": [data_params["nu"]],
+            "samples": [data_params["samples"]],
+            "dimensions": [data_params["dimensions"]],
+            # STANDARDIZE PARSM
             "standardize": [params["standardize"]],
-            # Gamma Params
-            "sigma_method": [params["sigma_estimator"][0]],
-            "sigma_percent": [params["sigma_estimator"][1]],
+            # SIGMA FORMAT PARAMS
             "per_dimension": [params["per_dimension"]],
             "separate_scales": [params["separate_scales"]],
+            # SIGMA METHOD PARAMS
+            "sigma_method": [params["sigma_estimator"][0]],
+            "sigma_percent": [params["sigma_estimator"][1]],
             "sigma_X": [sigma_X],
             "sigma_Y": [sigma_Y],
             # HSIC Params
@@ -222,16 +225,48 @@ def step(params: Dict):
 
 def main(args):
 
-    results_df = run_parallel_step(
-        exp_step=step,
-        parameters=get_parameters(args.dataset),
-        n_jobs=args.njobs,
-        verbose=args.verbose,
-    )
+    # get params
+    params, data_params = get_parameters(args.dataset)
 
-    # save results
-    results_df = pd.concat(results_df, ignore_index=True)
-    results_df.to_csv(f"{RES_PATH}{args.save}_{args.dataset}.csv")
+    # initialize datast
+    header = False
+    mode = "w"
+
+    for iparam in tqdm(data_params, total=len(data_params)):
+
+        # ================
+        # DATA
+        # ================
+        dist_data = DataParams(
+            dataset=iparam["dataset"],
+            trial=iparam["trial"],
+            std=iparam["std"],
+            nu=iparam["nu"],
+            samples=iparam["samples"],
+            dimensions=iparam["dimensions"],
+        )
+
+        # generate data
+        inputs = dist_data.generate_data()
+
+        results_df = run_parallel_step(
+            exp_step=step,
+            parameters=params,
+            n_jobs=args.njobs,
+            verbose=args.verbose,
+            data_params=iparam,
+            inputs=inputs,
+        )
+
+        # concat current results
+        results_df = pd.concat(results_df, ignore_index=True)
+
+        # save results
+        with open(f"{RES_PATH}{args.save}_{args.dataset}.csv", mode) as f:
+            results_df.to_csv(f, header=header)
+
+        header = False
+        mode = "a"
 
 
 if __name__ == "__main__":
