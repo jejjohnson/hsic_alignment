@@ -50,7 +50,9 @@ RES_PATH = (
 )
 
 
-def get_parameters(dataset: str = "gauss", shuffle: bool = True) -> Dict:
+def get_parameters(
+    dataset: str = "gauss", shuffle: bool = True, njobs: Optional = None
+) -> Dict:
     # initialize parameters
     params = {
         # dataset modification params
@@ -70,34 +72,34 @@ def get_parameters(dataset: str = "gauss", shuffle: bool = True) -> Dict:
     # add specific params
     if dataset == "gauss":
         # standard dataset parameters
-        data_params = {
-            "trial": [1, 2, 3, 4, 5],
-            "samples": [50, 100, 500, 1_000, 5_000],
-            "dimensions": [2, 3, 10, 50, 100],
-            "dataset": ["gauss"],
-            "std": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-            "nu": [1],
-        }
+        params["trial"] = [1, 2, 3, 4, 5]
+        params["dimensions"] = [2, 3, 10, 50, 100]
+        params["dataset"] = ["gauss"]
+        params["std"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        params["nu"] = [1]
+        # standard dataset parameters
+
     elif dataset == "tstudent":
         # standard dataset parameters
-        data_params = {
-            "trial": [1, 2, 3, 4, 5],
-            "samples": [50, 100, 500, 1_000, 5_000],
-            "dimensions": [2, 3, 10, 50, 100],
-            "dataset": ["tstudent"],
-            "std": [1],
-            "nu": [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        }
+        params["trial"] = [1, 2, 3, 4, 5]
+        params["dimensions"] = [2, 3, 10, 50, 100]
+        params["dataset"] = ["tstudent"]
+        params["std"] = [1]
+        params["nu"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
     else:
         raise ValueError("Unrecognized dataset: ", {dataset})
 
+    # Loop Params
+    loop_params = {}
+    loop_params["samples"] = [50, 100, 500, 1_000, 5_000]
+
     # shuffle parameters
     params = list(dict_product(params))
-    data_params = list(dict_product(data_params))
+    loop_params = list(dict_product(loop_params))
 
     params = random.sample(params, len(params))
-    data_params = random.sample(data_params, len(data_params))
-    return params, data_params
+    return params, loop_params
 
 
 def get_hsic(
@@ -168,7 +170,24 @@ def standardize_data(
     return X, Y
 
 
-def step(params: Dict, data_params: Dict, inputs):
+def step(
+    params: Dict, loop_param: Dict,
+):
+
+    # ================
+    # DATA
+    # ================
+    dist_data = DataParams(
+        dataset=params["dataset"],
+        trial=params["trial"],
+        std=params["std"],
+        nu=params["nu"],
+        samples=loop_param["samples"],
+        dimensions=params["dimensions"],
+    )
+
+    # generate data
+    inputs = dist_data.generate_data()
 
     # ====================
     # Sigma Estimator
@@ -198,12 +217,12 @@ def step(params: Dict, data_params: Dict, inputs):
     results_df = pd.DataFrame(
         {
             # Data Params
-            "dataset": [data_params["dataset"]],
-            "trial": [data_params["trial"]],
-            "std": [data_params["std"]],
-            "nu": [data_params["nu"]],
-            "samples": [data_params["samples"]],
-            "dimensions": [data_params["dimensions"]],
+            "dataset": [params["dataset"]],
+            "trial": [params["trial"]],
+            "std": [params["std"]],
+            "nu": [params["nu"]],
+            "samples": [loop_param["samples"]],
+            "dimensions": [params["dimensions"]],
             # STANDARDIZE PARSM
             "standardize": [params["standardize"]],
             # SIGMA FORMAT PARAMS
@@ -226,47 +245,36 @@ def step(params: Dict, data_params: Dict, inputs):
 def main(args):
 
     # get params
-    params, data_params = get_parameters(args.dataset)
+    params, loop_params = get_parameters(args.dataset, njobs=args.njobs)
 
     # initialize datast
     header = False
     mode = "w"
+    with tqdm(loop_params) as pbar:
+        for iparam in pbar:
 
-    for iparam in tqdm(data_params, total=len(data_params)):
+            pbar.set_description(
+                f"# Samples: {iparam['samples']}, Tasks: {len(params)}"
+            )
 
-        # ================
-        # DATA
-        # ================
-        dist_data = DataParams(
-            dataset=iparam["dataset"],
-            trial=iparam["trial"],
-            std=iparam["std"],
-            nu=iparam["nu"],
-            samples=iparam["samples"],
-            dimensions=iparam["dimensions"],
-        )
+            results_df = run_parallel_step(
+                exp_step=step,
+                parameters=params,
+                n_jobs=args.njobs,
+                verbose=args.verbose,
+                loop_param=iparam,
+            )
 
-        # generate data
-        inputs = dist_data.generate_data()
+            # concat current results
+            results_df = pd.concat(results_df, ignore_index=True)
 
-        results_df = run_parallel_step(
-            exp_step=step,
-            parameters=params,
-            n_jobs=args.njobs,
-            verbose=args.verbose,
-            data_params=iparam,
-            inputs=inputs,
-        )
+            # save results
+            with open(f"{RES_PATH}{args.save}_{args.dataset}.csv", mode) as f:
+                results_df.to_csv(f, header=header)
 
-        # concat current results
-        results_df = pd.concat(results_df, ignore_index=True)
-
-        # save results
-        with open(f"{RES_PATH}{args.save}_{args.dataset}.csv", mode) as f:
-            results_df.to_csv(f, header=header)
-
-        header = False
-        mode = "a"
+            header = False
+            mode = "a"
+            del results_df
 
 
 if __name__ == "__main__":
