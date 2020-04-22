@@ -1,12 +1,13 @@
 import sys, os
+import time
 
 sys.path.insert(0, "/home/emmanuel/code/rbig")
 
+import numpy as np
 from typing import Optional
 import collections
 from rbig.rbig import RBIG, RBIGMI, RBIGKLD
-import numpy as np
-import time
+
 
 RBIGResults = collections.namedtuple("RBIGRES", ["h", "tc", "mi", "kld", "time"])
 
@@ -57,7 +58,7 @@ def run_rbig_models(
             print(f"Entropy: {h:.3f}")
 
         # save rbig results
-        results = RBIGResults(mi=None, h=h, tc=tc, time=t1)
+        results = RBIGResults(mi=None, h=h, tc=tc, time=t1, kld=None)
 
         return results
 
@@ -87,7 +88,7 @@ def run_rbig_models(
             )
             print(f"Mutual Information: {mi:.3f}")
         # save rbig results
-        results = RBIGResults(mi=mi, h=None, tc=None, time=t1)
+        results = RBIGResults(mi=mi, h=None, tc=None, time=t1, kld=None)
 
         return results
 
@@ -118,7 +119,7 @@ def run_rbig_models(
             print(f"KL Divergence: {kld:.3f}")
 
         # save rbig results
-        results = RBIGResults(mi=mi, h=None, tc=None, kld=kld, time=t1)
+        results = RBIGResults(mi=None, h=None, tc=None, kld=kld, time=t1)
 
         return results
 

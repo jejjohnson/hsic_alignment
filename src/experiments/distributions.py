@@ -248,7 +248,7 @@ def main(args):
     params, loop_params = get_parameters(args.dataset, njobs=args.njobs)
 
     # initialize datast
-    header = False
+    header = True
     mode = "w"
     with tqdm(loop_params) as pbar:
         for iparam in pbar:

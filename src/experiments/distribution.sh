@@ -7,16 +7,9 @@
 #SBATCH --output=/home/emmanuel/projects/2019_hsic_align/src/experiments/logs/hsic_dist_%j.log
 
 module load Anaconda3
-
-sleep 2
-
 conda init
+source activate hsic_align
 
-sleep 2
-
-conda activate hsic_align
-
-sleep 2
 
 
 
