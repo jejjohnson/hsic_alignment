@@ -17,6 +17,8 @@ import pandas as pd
 import numpy as np
 import argparse
 import random
+import pandas as pd
+
 
 random.seed(123)
 
@@ -27,7 +29,8 @@ from data.distribution import DataParams, Inputs
 from sklearn.preprocessing import StandardScaler
 from sklearn.gaussian_process.kernels import RBF
 from models.dependence import HSICModel
-from pysim.kernel.utils import estimate_sigma
+
+# from pysim.kernel.utils import estimate_sigma
 
 
 # RBIG IT measures
@@ -65,7 +68,7 @@ def get_parameters(
         "sigma_estimator": [
             ("silverman", None),
             ("scott", None),
-            *[("median", x) for x in np.arange(0.1, 1.0, 0.1, dtype=np.float64)],
+            *[("median", x) for x in [10, 20, 30, 40, 50, 60, 70, 80, 90]],
         ],
     }
 
@@ -97,77 +100,103 @@ def get_parameters(
     # shuffle parameters
     params = list(dict_product(params))
     loop_params = list(dict_product(loop_params))
-
-    params = random.sample(params, len(params))
+    if shuffle:
+        params = random.sample(params, len(params))
     return params, loop_params
 
 
-def get_hsic(
+from typing import Optional
+from scipy.spatial.distance import pdist, squareform
+from models.dependence import HSICModel
+
+
+def scotts_factor(X: np.ndarray) -> float:
+    """Scotts Method to estimate the length scale of the 
+    rbf kernel.
+    
+        factor = n**(-1./(d+4))
+    
+    Parameters
+    ----------
+    X : np.ndarry
+        Input array
+    
+    Returns
+    -------
+    factor : float
+        the length scale estimated
+    
+    """
+    n_samples, n_features = X.shape
+
+    return np.power(n_samples, -1 / (n_features + 4.0))
+
+
+def silvermans_factor(X: np.ndarray) -> float:
+    """Silvermans method used to estimate the length scale
+    of the rbf kernel.
+    
+    factor = (n * (d + 2) / 4.)**(-1. / (d + 4)).
+    
+    Parameters
+    ----------
+    X : np.ndarray,
+        Input array
+    
+    Returns
+    -------
+    factor : float
+        the length scale estimated
+    """
+    n_samples, n_features = X.shape
+
+    base = (n_samples * (n_features + 2.0)) / 4.0
+
+    return np.power(base, -1 / (n_features + 4.0))
+
+
+def kth_distance(dists: np.ndarray, percent: float) -> np.ndarray:
+
+    if isinstance(percent, float):
+        percent /= 100
+
+    # kth distance calculation (50%)
+    kth_sample = int(percent * dists.shape[0])
+
+    # take the Kth neighbours of that distance
+    k_dist = dists[:, kth_sample]
+
+    return k_dist
+
+
+def sigma_estimate(
     X: np.ndarray,
-    Y: np.ndarray,
-    scorer: str,
-    sigma_X: Optional[float] = None,
-    sigma_Y: Optional[float] = None,
+    method: str = "median",
+    percent: Optional[int] = None,
+    heuristic: bool = False,
 ) -> float:
-    """Estimates the HSIC value given some data, sigma and
-    the score."""
-    # init hsic model class
 
-    hsic_model = HSICModel()
-    # hsic model params
-    if sigma_X is not None:
+    # get the squared euclidean distances
+    if method == "silverman":
+        return silvermans_factor(X)
+    elif method == "scott":
+        return scotts_factor(X)
+    elif percent is not None:
+        kth_sample = int((percent / 100) * X.shape[0])
+        dists = np.sort(squareform(pdist(X, "sqeuclidean")))[:, kth_sample]
+    else:
+        dists = np.sort(pdist(X, "sqeuclidean"))
 
-        hsic_model.kernel_X = RBF(sigma_X)
-        hsic_model.kernel_Y = RBF(sigma_Y)
+    if method == "median":
+        sigma = np.median(dists)
+    elif method == "mean":
+        sigma = np.mean(dists)
+    else:
+        raise ValueError(f"Unrecognized distance measure: {method}")
 
-    # get hsic score
-    hsic_val = hsic_model.get_score(X, Y, scorer)
-
-    return hsic_val
-
-
-def get_sigma(
-    X: np.ndarray,
-    Y: np.ndarray,
-    method: str = "silverman",
-    percent: Optional[float] = None,
-    per_dimension: bool = False,
-    separate_scales: bool = False,
-) -> Tuple[np.ndarray, np.ndarray]:
-    # sigma parameters
-    subsample = None
-    random_state = 123
-
-    sigma_X = estimate_sigma(
-        X,
-        subsample=subsample,
-        method=method,
-        percent=percent,
-        random_state=random_state,
-        per_dimension=per_dimension,
-    )
-
-    sigma_Y = estimate_sigma(
-        Y,
-        subsample=subsample,
-        method=method,
-        percent=percent,
-        random_state=random_state,
-        per_dimension=per_dimension,
-    )
-
-    if separate_scales is False:
-        sigma_Y = sigma_X = np.mean([sigma_X, sigma_Y])
-
-    return sigma_X, sigma_Y
-
-
-def standardize_data(
-    X: np.ndarray, Y: np.ndarray, standardize: bool = False
-) -> Tuple[np.ndarray, np.ndarray]:
-    X = StandardScaler().fit_transform(X)
-    Y = StandardScaler().fit_transform(Y)
-    return X, Y
+    if heuristic:
+        sigma = np.sqrt(sigma / 2)
+    return sigma
 
 
 def step(
@@ -189,25 +218,42 @@ def step(
     # generate data
     inputs = dist_data.generate_data()
 
-    # ====================
-    # Sigma Estimator
-    # ====================
-
-    # estimate sigma
-    sigma_X, sigma_Y = get_sigma(
-        X=inputs.X,
-        Y=inputs.Y,
+    # ========================
+    # Estimate Sigma
+    # ========================
+    f_x = lambda x: sigma_estimate(
+        x,
         method=params["sigma_estimator"][0],
         percent=params["sigma_estimator"][1],
-        per_dimension=params["per_dimension"],
-        separate_scales=params["separate_scales"],
+        heuristic=False,
     )
 
-    # ====================
-    # HSIC Model
-    # ====================
-    # get hsic score
-    score = get_hsic(inputs.X, inputs.Y, params["scorer"], sigma_X, sigma_Y)
+    # ========================
+    # Per Dimension
+    # ========================
+    if params["per_dimension"]:
+        sigma_X = [f_x(ifeature.reshape(-1, 1)) for ifeature in inputs.X.T]
+        sigma_Y = [f_x(ifeature.reshape(-1, 1)) for ifeature in inputs.Y.T]
+
+    else:
+        sigma_X = f_x(inputs.X)
+        sigma_Y = f_x(inputs.Y)
+
+    # ========================
+    # Separate Length Scales
+    # ========================
+    # print(params)
+    # print(sigma_X, sigma_Y)
+    if params["separate_scales"] is True:
+        sigma_X = np.mean([np.mean(sigma_X), np.mean(sigma_Y)])
+        sigma_Y = np.mean([np.mean(sigma_X), np.mean(sigma_Y)])
+
+    # =========================
+    # Estimate HSIC
+    # =========================
+    hsic_clf = HSICModel(kernel_X=RBF(sigma_X), kernel_Y=RBF(sigma_Y),)
+
+    score = hsic_clf.get_score(inputs.X, inputs.Y, params["scorer"])
 
     # ====================
     # Results
@@ -245,36 +291,44 @@ def step(
 def main(args):
 
     # get params
-    params, loop_params = get_parameters(args.dataset, njobs=args.njobs)
+    params, loop_params = get_parameters(
+        args.dataset, njobs=args.njobs, shuffle=args.shuffle
+    )
+
+    if args.smoke_test:
+        iparams = params[0]
+        iloop_param = loop_params[0]
+        _ = step(iparams, iloop_param)
 
     # initialize datast
-    header = True
-    mode = "w"
-    with tqdm(loop_params) as pbar:
-        for iparam in pbar:
+    else:
+        header = True
+        mode = "w"
+        with tqdm(loop_params) as pbar:
+            for iparam in pbar:
 
-            pbar.set_description(
-                f"# Samples: {iparam['samples']}, Tasks: {len(params)}"
-            )
+                pbar.set_description(
+                    f"# Samples: {iparam['samples']}, Tasks: {len(params)}"
+                )
 
-            results_df = run_parallel_step(
-                exp_step=step,
-                parameters=params,
-                n_jobs=args.njobs,
-                verbose=args.verbose,
-                loop_param=iparam,
-            )
+                results_df = run_parallel_step(
+                    exp_step=step,
+                    parameters=params,
+                    n_jobs=args.njobs,
+                    verbose=args.verbose,
+                    loop_param=iparam,
+                )
 
-            # concat current results
-            results_df = pd.concat(results_df, ignore_index=True)
+                # concat current results
+                results_df = pd.concat(results_df, ignore_index=True)
 
-            # save results
-            with open(f"{RES_PATH}{args.save}_{args.dataset}.csv", mode) as f:
-                results_df.to_csv(f, header=header)
+                # save results
+                with open(f"{RES_PATH}{args.save}_{args.dataset}.csv", mode) as f:
+                    results_df.to_csv(f, header=header)
 
-            header = False
-            mode = "a"
-            del results_df
+                header = False
+                mode = "a"
+                del results_df
 
 
 if __name__ == "__main__":
@@ -293,6 +347,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--verbose", type=int, default=1, help="Number of helpful print statements."
     )
+    parser.add_argument("-sm", "--smoke_test", action="store_true")
+    parser.add_argument("-r", "--shuffle", action="store_true")
     args = parser.parse_args()
 
     main(args)
