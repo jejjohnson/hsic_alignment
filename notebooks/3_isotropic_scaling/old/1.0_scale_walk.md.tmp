@@ -1,0 +1,634 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+# Isotropic Scaling Experiment
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Synopsis
+
+In this experiment, I will be looking at how the isotropic scaling effects the HSIC score for the HSIC and KA algorithms. In theory, because we are trying to find one parameter shared between the two kernel functions, there should be problems when the scale of one distribution is larger than another. It's a drawback of the method and it motivates the need to use two different parameters for the distributions.
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Code
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import sys, os
+# Insert path to model directory,.
+cwd = os.getcwd()
+path = f"{cwd}/../../src"
+sys.path.insert(0, path)
+
+import warnings
+import tqdm
+import random
+import pandas as pd
+import numpy as np
+import argparse
+from sklearn.utils import check_random_state
+
+# toy datasets
+from data.toy import generate_dependence_data, generate_isotropic_data
+
+# Kernel Dependency measure
+from models.train_models import get_gamma_init
+from models.train_models import get_hsic
+from models.kernel import estimate_sigma, sigma_to_gamma, gamma_to_sigma, get_param_grid
+from models.ite_algorithms import run_rbig_models
+from sklearn.preprocessing import StandardScaler
+
+# Plotting
+from visualization.distribution import plot_scorer
+from visualization.scaling import plot_scorer_scale, plot_scorer_scale_norm
+
+
+# experiment helpers
+from tqdm import tqdm
+
+# Plotting Procedures
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+# plt.style.use(['fivethirtyeight', 'seaborn-poster'])
+warnings.filterwarnings('ignore') # get rid of annoying warnings
+%matplotlib inline
+
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+plt.style.available
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;seaborn-dark-palette&#39;,
+ &#39;classic&#39;,
+ &#39;ggplot&#39;,
+ &#39;seaborn-dark&#39;,
+ &#39;seaborn-pastel&#39;,
+ &#39;seaborn-bright&#39;,
+ &#39;seaborn-deep&#39;,
+ &#39;tableau-colorblind10&#39;,
+ &#39;seaborn-talk&#39;,
+ &#39;fast&#39;,
+ &#39;seaborn-ticks&#39;,
+ &#39;seaborn-white&#39;,
+ &#39;bmh&#39;,
+ &#39;fivethirtyeight&#39;,
+ &#39;seaborn-muted&#39;,
+ &#39;_classic_test&#39;,
+ &#39;grayscale&#39;,
+ &#39;seaborn-darkgrid&#39;,
+ &#39;seaborn-poster&#39;,
+ &#39;seaborn&#39;,
+ &#39;seaborn-whitegrid&#39;,
+ &#39;dark_background&#39;,
+ &#39;seaborn-paper&#39;,
+ &#39;seaborn-colorblind&#39;,
+ &#39;seaborn-notebook&#39;,
+ &#39;Solarize_Light2&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### Experimental Design
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+The objective of this experiment is to measure how the Mutual information (MI) changes related to the HSIC score of different methods when we change the data and preprocessing conditions (normalization and scale). We change the nature of the data via the scale of the data received and whether or not we do a normalization procedure before we submit the datasets to our HSIC algorithms. Each HSIC method will give us a score and we can calculate the Mutual information
+
+**Free Params**
+
+* Number of Trials (`seed`)
+    * 1:10
+* Scale or not scaled (`scale`)
+* Normalized | Not Normalized (`normalize`)
+* HSIC Algorithm (`method`)
+    * HSIC, KA, cKA
+* Dataset (`dataset`)
+    * Linear, Sinusoidal, Circle, Random
+* Amount of Noise (`noise` List)
+    * log space 
+
+**Measurements**
+
+* Mutual Information (`mi`)
+* HSIC score (`score`)
+* Time for execution (`time`)
+
+**Fixed Parameters**
+
+* Number of points (`num_points`)
+* Noise for X points (`noise_x`)
+* Noise for Y points (`noise_y`)
+* 
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Demo
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+np.logspace(-2, 0, 10)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([0.01      , 0.01668101, 0.02782559, 0.04641589, 0.07742637,
+       0.12915497, 0.21544347, 0.35938137, 0.59948425, 1.        ])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+class DataParams:
+    dataset = 'line'
+    num_points = 500
+    noise_y = 0.1
+    alpha = 1.0
+    beta = 1.0
+
+class ExpParams:
+    dataset = ['line', 'sine', 'circ', 'rand']
+    seed = np.linspace(1,10,10)
+    scale = np.logspace(-2, 2, 10)
+    normalized = [True, False]
+    noise = np.logspace(-3, 1, 10)
+    method = ['hsic', 'tka', 'ctka']
+    gamma_method = [
+        ('median', 0.2, None),
+        ('median', 0.4, None),
+        ('median', 0.5, None),
+        ('median', 0.6, None),
+        ('median', 0.8, None),
+    ]
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Helper Functions
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+from typing import Tuple, Type, Optional
+
+def get_gamma_name(gamma_method: Tuple[str,str,str])-> str:
+    if gamma_method[1] is None and gamma_method[2] is None:
+        gamma_name = gamma_method[0]
+    elif gamma_method[1] is not None and gamma_method[2] is None:
+        gamma_name = f"{gamma_method[0]}_p{gamma_method[1]}"
+    elif gamma_method[1] is None and gamma_method[2] is not None:
+        gamma_name = f"{gamma_method[0]}_s{gamma_method[2]}"
+    elif gamma_method[1] is not None and gamma_method[2] is not None:
+        gamma_name = f"{gamma_method[0]}_s{gamma_method[1]}_s{gamma_method[2]}"
+    else:
+        raise ValueError('Unrecognized Combination...')
+    return gamma_name
+
+def plot_data(X: np.ndarray, Y: np.ndarray):
+    fig, ax = plt.subplots(nrows=1, figsize=(7, 5))
+
+    ax.scatter(X, Y, color='red')
+    # plt.legend(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.tight_layout()
+    plt.show()
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+class ScaleExperiment:
+    def __init__(self, data_params, exp_params):
+        self.data_params = data_params
+        self.exp_params = exp_params
+        
+    def _get_data(self, dataset: str, noise: float, seed: int)-> Tuple[np.ndarray, np.ndarray]:
+        """Gathers the raw dependence data"""
+        # get dataset
+        X, Y = generate_dependence_data(
+            dataset=dataset,
+            num_points=10_000, #self.data_params.num_points,
+            seed=seed,
+            noise_x=noise,
+            noise_y=noise,
+            alpha=self.data_params.alpha,
+            beta=self.data_params.beta
+        )
+        return X, Y
+    
+    def _apply_noise(self, X: np.ndarray, Y: np.ndarray, noise: float, seed: int)-> Tuple[np.ndarray, np.ndarray]:
+        
+        rng = check_random_state(seed)
+        
+        X += rng.randn(X.shape[0], X.shape[1])
+#         Y += rng.randn(Y.shape)
+        
+        
+        return X, Y
+    def _apply_scaling(self, X: np.ndarray, scale: float)-> np.ndarray:
+        """The scaling step in our experiment"""
+        # apply scaling
+        return scale * X
+    
+    def _apply_normalization(self, X: np.ndarray, Y: np.ndarray, normalize: bool)-> np.ndarray:
+        """The normalization step in our experiment."""
+        # apply normalization
+        if normalize == True:
+            X = StandardScaler().fit_transform(X)
+#             Y = StandardScaler().fit_transform(Y)
+        elif normalize == False:
+            pass
+        else:
+            raise ValueError(f'Unrecognized boolean value for normalize {normalize}')
+        return X, Y
+    
+    def _apply_mi_estimate(self, X: np.ndarray, Y: np.ndarray)-> float:
+        """Apply Mutual Information estimator. 
+        We choose to use RBIG as our estimator."""
+        # estimate mutual information
+        mi, _ = run_rbig_models(X, Y, measure='mi', verbose=None)
+        
+        return mi
+    
+    def _apply_hsic_estimate(
+        self, 
+        X: np.ndarray, 
+        Y: np.ndarray, 
+        method: str, 
+        gamma_init: Tuple[str, Optional[float], Optional[float]])-> float:
+        """Apply HSIC estimator using one of the 3 algorithms:
+        * HSIC
+        * KA
+        * cKA
+        """
+        # initialize the gamma parameter
+        gamma_init = get_gamma_init(X, Y, gamma_init[0], gamma_init[1], gamma_init[2])
+        
+        # get hsic_value
+        hsic_value = get_hsic(X, Y, method, gamma_init, maximum=False)
+        
+        return hsic_value
+    
+    def _experiment_step(
+        self,
+        results_df: pd.DataFrame,
+        dataset: str,
+        noise: float, seed: int,
+        scale: float,
+        normalize: bool,
+        method: str,
+        gamma_init: Tuple[str, Optional[float], Optional[float]]
+    )-> pd.DataFrame:
+        
+        # Step I - Extract Data
+        X, Y = self._get_data(dataset=dataset, noise=noise, seed=seed)
+        
+#         # Step I.1 - Apply Noise
+#         X, Y = self._apply_noise(X=X, Y=Y, noise=noise, seed=seed)
+        
+        # Step II - Apply Scaling
+        X = self._apply_scaling(X=X, scale=scale)
+
+        # Step III - Apply Normalization
+        X, Y = self._apply_normalization(X=X, Y=Y, normalize=normalize)
+
+        # Step IV - Estimate mutual information
+        mi = self._apply_mi_estimate(X, Y)
+
+        # Step IV - Estimate HSIC value
+        hsic_value = self._apply_hsic_estimate(X, Y, method, gamma_init)
+        
+        # Step V - Save Results to dataframe
+        results_df = results_df.append({
+            'normalized': normalize,
+            'trial': seed,
+            'dataset': dataset,
+            'scale': scale,
+            'scorer': method,
+            'gamma_method': get_gamma_name(gamma_init),
+            'hsic_value': hsic_value,
+            "mi": mi,
+            "noise": noise,
+        }, ignore_index=True)
+        return results_df
+    
+    def run_experiment(self):
+        
+        
+        results_df = pd.DataFrame()
+#         print(self.exp_params.seed)
+        
+        # Loop Through Free Parameters
+        for iseed in self.exp_params.seed:
+#             print(iseed)
+            for idataset in self.exp_params.dataset:
+                for inoise in self.exp_params.noise: 
+                    for iscale in self.exp_params.scale:
+                        for inormalize in self.exp_params.normalized:
+                            for igamma in self.exp_params.gamma_method:
+                                for imethod in self.exp_params.method:
+                                    results_df = self._experiment_step(
+                                        results_df=results_df,
+                                        dataset=idataset,
+                                        noise=inoise, 
+                                        seed=iseed,
+                                        scale=iscale,
+                                        normalize=inormalize,
+                                        method=imethod,
+                                        gamma_init=igamma
+                                    )
+        return results_df
+            
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Test Run - Full Algorithm
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Initialize Experiment class
+exp_class = ScaleExperiment(DataParams, ExpParams, )
+
+# ========================================
+# Step I - Extract data
+# ========================================
+dataset = 'circ'
+noise = 0.000
+seed = 1
+
+X, Y = exp_class._get_data(dataset=dataset, noise=noise, seed=seed)
+
+# plot_data(X,Y)
+# ========================================
+# Step II - Apply Scaling
+# ========================================
+scale = 1.
+
+X = exp_class._apply_scaling(X=X, scale=scale)
+# plot_data(X,Y)
+
+# ========================================
+# Step III - Apply Normalization
+# ========================================
+normalize = False
+
+X, Y = exp_class._apply_normalization(X=X, Y=Y, normalize=normalize)
+
+# plot_data(X,Y)
+
+# ========================================
+# Step IV - Estimate mutual information
+# ========================================
+mi = exp_class._apply_mi_estimate(X, Y)
+
+print(f'MI (RBIG): {mi:.4f}')
+
+# ========================================
+# Step V - Estimate HSIC value
+# ========================================
+method = 'ctka'
+gamma_init = ('median', 0.5, None)
+
+hsic_value = exp_class._apply_hsic_estimate(X, Y, method, gamma_init)
+
+print(f'HSIC score ({method}): {hsic_value:.4f}')
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>MI (RBIG): 1.8373
+HSIC score (ctka): 0.0749
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Test Run - Experimental Step
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+# Initialize Experiment class
+exp_class = ScaleExperiment(DataParams, ExpParams, )
+
+
+results_df = exp_class._experiment_step(
+    dataset=dataset, noise=noise, seed=seed,
+    scale=scale,
+    normalize=normalize,
+    method=method,
+    gamma_init=gamma_init
+)
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-9-bada97fe429c&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      8</span>     normalize<span class="ansi-blue-fg">=</span>normalize<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span>     method<span class="ansi-blue-fg">=</span>method<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">---&gt; 10</span><span class="ansi-red-fg">     </span>gamma_init<span class="ansi-blue-fg">=</span>gamma_init
+<span class="ansi-green-intense-fg ansi-bold">     11</span> )
+
+<span class="ansi-red-fg">TypeError</span>: _experiment_step() missing 1 required positional argument: &#39;results_df&#39;</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+results_df.head()
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Test Run - Full Experiment Loop
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+class DataParams:
+    dataset = 'line'
+    num_points = 1_000
+    noise_y = 0.00
+    alpha = 1.0
+    beta = 1.0
+
+class ExpParams:
+    dataset = ['line', 'sine', 'circ', 'rand']
+    seed = np.linspace(1,10,10, dtype=int)
+    scale = np.logspace(-2, 2, 10)
+    normalized = [True, False]
+    noise = [0.01]
+    method = ['hsic', 'tka', 'ctka']
+    gamma_method = [
+        ('median', 0.5, None),
+    ]
+
+# Initialize Experiment class
+exp_class = ScaleExperiment(DataParams, ExpParams, )
+
+results_df = exp_class.run_experiment()
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+results_df.tail()
+```
+
+</div>
+
+</div>
+
+

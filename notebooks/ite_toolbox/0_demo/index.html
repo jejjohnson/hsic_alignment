@@ -1,0 +1,2753 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Finding kernel parameters">
+      
+      
+        <link rel="canonical" href="https://jejjohnson.github.io/hsic_alignment/notebooks/ite_toolbox/0_demo/">
+      
+      
+        <meta name="author" content="J. Emmanuel Johnson">
+      
+      <link rel="shortcut icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.3">
+    
+    
+      
+        <title>0 demo - HSIC Alignment</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.62d34fff.min.css">
+      
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.c8acc6db.min.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="">
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=source+code+pro:300,400,400i,700%7Csource+code+pro&display=fallback">
+        <style>body,input{font-family:"source code pro",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"source code pro",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../../css/ansi-colours.css">
+    
+      <link rel="stylesheet" href="../../../css/jupyter-cells.css">
+    
+      <link rel="stylesheet" href="../../../css/pandas-dataframe.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="black" data-md-color-accent="gray">
+  
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#information-theory-measures-using-the-ite-toolbox" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="https://jejjohnson.github.io/hsic_alignment" title="HSIC Alignment" class="md-header-nav__button md-logo" aria-label="HSIC Alignment">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            HSIC Alignment
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              0 demo
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header-nav__source">
+        
+<a href="https://github.com/jejjohnson/hsic_alignment/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jejjohnson/hsic_alignment
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://jejjohnson.github.io/hsic_alignment" title="HSIC Alignment" class="md-nav__button md-logo" aria-label="HSIC Alignment">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
+
+    </a>
+    HSIC Alignment
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/jejjohnson/hsic_alignment/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jejjohnson/hsic_alignment
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../.." title="Overview" class="md-nav__link">
+      Overview
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
+    <label class="md-nav__link" for="nav-2">
+      Notebooks
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Notebooks" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Notebooks
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1">
+    
+    <label class="md-nav__link" for="nav-2-1">
+      1 1D parameter
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="1 1D parameter" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-1">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        1 1D parameter
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../1_1D_parameter/1.0_motivation/" title="1.0 motivation" class="md-nav__link">
+      1.0 motivation
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../1_1D_parameter/2.0_preliminary_exp/" title="2.0 preliminary exp" class="md-nav__link">
+      2.0 preliminary exp
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-2" type="checkbox" id="nav-2-2">
+    
+    <label class="md-nav__link" for="nav-2-2">
+      2 gamma parameter
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="2 gamma parameter" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-2">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        2 gamma parameter
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_gamma_parameter/1_explore_exp/" title="1 explore exp" class="md-nav__link">
+      1 explore exp
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_gamma_parameter/2_visualize_1l/" title="2 visualize 1l" class="md-nav__link">
+      2 visualize 1l
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_gamma_parameter/2_visualize_20k/" title="2 visualize 20k" class="md-nav__link">
+      2 visualize 20k
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../2_gamma_parameter/gamma_trial_experiment/" title="Gamma trial experiment" class="md-nav__link">
+      Gamma trial experiment
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-3" type="checkbox" id="nav-2-3">
+    
+    <label class="md-nav__link" for="nav-2-3">
+      3 isotropic scaling
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="3 isotropic scaling" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        3 isotropic scaling
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_isotropic_scaling/0_preliminary_exp-Copy1/" title="0 preliminary exp Copy1" class="md-nav__link">
+      0 preliminary exp Copy1
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_isotropic_scaling/2.0_scale_viz/" title="2.0 scale viz" class="md-nav__link">
+      2.0 scale viz
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_isotropic_scaling/3.0_scale_walk/" title="3.0 scale walk" class="md-nav__link">
+      3.0 scale walk
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-3-4" type="checkbox" id="nav-2-3-4">
+    
+    <label class="md-nav__link" for="nav-2-3-4">
+      Old
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Old" data-md-level="3">
+      <label class="md-nav__title" for="nav-2-3-4">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Old
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../3_isotropic_scaling/old/1.0_scale_walk/" title="1.0 scale walk" class="md-nav__link">
+      1.0 scale walk
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4">
+    
+    <label class="md-nav__link" for="nav-2-4">
+      4 distributions
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="4 distributions" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-4">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        4 distributions
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/2.1_exp_gamma_space/" title="2.1 exp gamma space" class="md-nav__link">
+      2.1 exp gamma space
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/2.2_exp_mutual_info/" title="2.2 exp mutual info" class="md-nav__link">
+      2.2 exp mutual info
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/2.3_viz_mutual_info/" title="2.3 viz mutual info" class="md-nav__link">
+      2.3 viz mutual info
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/untitled/" title="Untitled" class="md-nav__link">
+      Untitled
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-4-5" type="checkbox" id="nav-2-4-5">
+    
+    <label class="md-nav__link" for="nav-2-4-5">
+      Old
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Old" data-md-level="3">
+      <label class="md-nav__title" for="nav-2-4-5">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Old
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/old/0_demo/" title="0 demo" class="md-nav__link">
+      0 demo
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/old/2.1_exp_walkthrough/" title="2.1 exp walkthrough" class="md-nav__link">
+      2.1 exp walkthrough
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/old/3.1_trial_experiment/" title="3.1 trial experiment" class="md-nav__link">
+      3.1 trial experiment
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/old/3_exp_dimensions/" title="3 exp dimensions" class="md-nav__link">
+      3 exp dimensions
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/old/4_visualize_dimensions/" title="4 visualize dimensions" class="md-nav__link">
+      4 visualize dimensions
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../4_distributions/old/4_visualize_dimensions_original/" title="4 visualize dimensions original" class="md-nav__link">
+      4 visualize dimensions original
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-5" type="checkbox" id="nav-2-5">
+    
+    <label class="md-nav__link" for="nav-2-5">
+      Code reviews
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Code reviews" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-5">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Code reviews
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../code_reviews/1.0_estimate_sigma/" title="1.0 estimate sigma" class="md-nav__link">
+      1.0 estimate sigma
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../code_reviews/2.0_estimate_hsic/" title="2.0 estimate hsic" class="md-nav__link">
+      2.0 estimate hsic
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../code_reviews/3.0_multivariate_dists/" title="3.0 multivariate dists" class="md-nav__link">
+      3.0 multivariate dists
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../code_reviews/4.0_best_params/" title="4.0 best params" class="md-nav__link">
+      4.0 best params
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../code_reviews/5.0_fitting_mi/" title="5.0 fitting mi" class="md-nav__link">
+      5.0 fitting mi
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6">
+    
+    <label class="md-nav__link" for="nav-2-6">
+      Demos
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Demos" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-6">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Demos
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../demos/1_hsic-Copy1/" title="1 hsic Copy1" class="md-nav__link">
+      1 hsic Copy1
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../demos/2_estimate_sigma/" title="2 estimate sigma" class="md-nav__link">
+      2 estimate sigma
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2-7" type="checkbox" id="nav-2-7" checked>
+    
+    <label class="md-nav__link" for="nav-2-7">
+      Ite toolbox
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Ite toolbox" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-7">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+        </span>
+        Ite toolbox
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        0 demo
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,9H17V7H3V9M3,13H17V11H3V13M3,17H17V15H3V17M19,17H21V15H19V17M19,7V9H21V7H19M19,13H21V11H19V13Z" /></svg>
+        </span>
+      </label>
+    
+    <a href="./" title="0 demo" class="md-nav__link md-nav__link--active">
+      0 demo
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    Resources
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literature-review-what-we-previous-did" class="md-nav__link">
+    Literature Review (what we previous did)
+  </a>
+  
+    <nav class="md-nav" aria-label="Literature Review (what we previous did)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entropy" class="md-nav__link">
+    Entropy
+  </a>
+  
+    <nav class="md-nav" aria-label="Entropy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#algorithms" class="md-nav__link">
+    Algorithms
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#knnk" class="md-nav__link">
+    KnnK
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kdp" class="md-nav__link">
+    KDP
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expf" class="md-nav__link">
+    expF
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vme" class="md-nav__link">
+    vME
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensemble" class="md-nav__link">
+    Ensemble
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#potential-new-experiments" class="md-nav__link">
+    Potential New Experiments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voronoi" class="md-nav__link">
+    Voronoi
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-information" class="md-nav__link">
+    Mutual Information
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-correlation" class="md-nav__link">
+    Total Correlation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code" class="md-nav__link">
+    Code
+  </a>
+  
+    <nav class="md-nav" aria-label="Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data" class="md-nav__link">
+    Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entropy_1" class="md-nav__link">
+    Entropy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#algorithms_1" class="md-nav__link">
+    Algorithms
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#knnk_1" class="md-nav__link">
+    KnnK
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kdp_1" class="md-nav__link">
+    KDP
+  </a>
+  
+    <nav class="md-nav" aria-label="KDP">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#algorithm" class="md-nav__link">
+    Algorithm
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shannon-entropy-knnkdp" class="md-nav__link">
+    Shannon Entropy (KNN/KDP)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ite-toolbox-implementation" class="md-nav__link">
+    ITE Toolbox implementation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shannon-entropy-expf" class="md-nav__link">
+    Shannon Entropy: expF
+  </a>
+  
+    <nav class="md-nav" aria-label="Shannon Entropy: expF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vme_1" class="md-nav__link">
+    vME
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensemble_1" class="md-nav__link">
+    Ensemble
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#potential-new-experiments_1" class="md-nav__link">
+    Potential New Experiments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voronoi_1" class="md-nav__link">
+    Voronoi
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-information_1" class="md-nav__link">
+    Mutual Information
+  </a>
+  
+    <nav class="md-nav" aria-label="Mutual Information">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#naive" class="md-nav__link">
+    Naive
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ite-toolbox" class="md-nav__link">
+    ITE Toolbox
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-correlation-multi-information-co-information" class="md-nav__link">
+    Total Correlation (Multi-Information, Co-Information)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../1_fake_distributions/" title="1 fake distributions" class="md-nav__link">
+      1 fake distributions
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../Untitled/" title="Untitled" class="md-nav__link">
+      Untitled
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    Resources
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literature-review-what-we-previous-did" class="md-nav__link">
+    Literature Review (what we previous did)
+  </a>
+  
+    <nav class="md-nav" aria-label="Literature Review (what we previous did)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entropy" class="md-nav__link">
+    Entropy
+  </a>
+  
+    <nav class="md-nav" aria-label="Entropy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#algorithms" class="md-nav__link">
+    Algorithms
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#knnk" class="md-nav__link">
+    KnnK
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kdp" class="md-nav__link">
+    KDP
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expf" class="md-nav__link">
+    expF
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vme" class="md-nav__link">
+    vME
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensemble" class="md-nav__link">
+    Ensemble
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#potential-new-experiments" class="md-nav__link">
+    Potential New Experiments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voronoi" class="md-nav__link">
+    Voronoi
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-information" class="md-nav__link">
+    Mutual Information
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-correlation" class="md-nav__link">
+    Total Correlation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code" class="md-nav__link">
+    Code
+  </a>
+  
+    <nav class="md-nav" aria-label="Code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data" class="md-nav__link">
+    Data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entropy_1" class="md-nav__link">
+    Entropy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#algorithms_1" class="md-nav__link">
+    Algorithms
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#knnk_1" class="md-nav__link">
+    KnnK
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kdp_1" class="md-nav__link">
+    KDP
+  </a>
+  
+    <nav class="md-nav" aria-label="KDP">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#algorithm" class="md-nav__link">
+    Algorithm
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shannon-entropy-knnkdp" class="md-nav__link">
+    Shannon Entropy (KNN/KDP)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ite-toolbox-implementation" class="md-nav__link">
+    ITE Toolbox implementation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shannon-entropy-expf" class="md-nav__link">
+    Shannon Entropy: expF
+  </a>
+  
+    <nav class="md-nav" aria-label="Shannon Entropy: expF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vme_1" class="md-nav__link">
+    vME
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensemble_1" class="md-nav__link">
+    Ensemble
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#potential-new-experiments_1" class="md-nav__link">
+    Potential New Experiments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voronoi_1" class="md-nav__link">
+    Voronoi
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-information_1" class="md-nav__link">
+    Mutual Information
+  </a>
+  
+    <nav class="md-nav" aria-label="Mutual Information">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#naive" class="md-nav__link">
+    Naive
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ite-toolbox" class="md-nav__link">
+    ITE Toolbox
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total-correlation-multi-information-co-information" class="md-nav__link">
+    Total Correlation (Multi-Information, Co-Information)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/jejjohnson/hsic_alignment/edit/master/docs/notebooks/ite_toolbox/0_demo.ipynb" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>
+                  </a>
+                
+                
+                  
+                
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h1 id="information-theory-measures-using-the-ite-toolbox">Information Theory Measures using the ITE Toolbox<a class="headerlink" href="#information-theory-measures-using-the-ite-toolbox" title="Permanent link">&para;</a></h1>
+<ul>
+<li>Author: J. Emmanuel Johnson</li>
+<li>Email: jemanjohnson34@gmail.com</li>
+<li>Date: <span><span class="MathJax_Preview">4^{\text{th}}</span><script type="math/tex">4^{\text{th}}</script></span> September, <span><span class="MathJax_Preview">2019</span><script type="math/tex">2019</script></span>
+</div>
+</div></li>
+</ul>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+This notebook will walk-through how one can calculate a few key Information theory (IT) measures using the ITE toolbox. We have done previous experiments with the MATLAB package but there is a python version that can be useful for Python users. It's a lot cleaner but some of the functionality may be difficult to follow. 
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="resources">Resources<a class="headerlink" href="#resources" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Gael Implementation - <a href="https://gist.github.com/GaelVaroquaux/ead9898bd3c973c40429">Gist</a></li>
+<li>ITE sub imples - <a href="https://github.com/aylliote/high_dimensional_mutual_information">Github</a></li>
+</ul>
+</div>
+</div>
+
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="literature-review-what-we-previous-did">Literature Review (what we previous did)<a class="headerlink" href="#literature-review-what-we-previous-did" title="Permanent link">&para;</a></h2>
+</div>
+</div>
+
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="entropy">Entropy<a class="headerlink" href="#entropy" title="Permanent link">&para;</a></h3>
+<p>In our experiments, we were only looking at Shannon entropy. It is the general case of Renyi's entropy as <span><span class="MathJax_Preview">\alpha \rightarrow 1</span><script type="math/tex">\alpha \rightarrow 1</script></span>. We chose not to look at Renyi's entropy because we did not want to go down a rabbit hole of measures that we cannont understand nor justify. So we stuck to the basics. It's also important to keep in mind that we were looking at measures that could calculate the joint entropy; i.e. for multivariate, multi-dimensional datasets.</p>
+</div>
+</div>
+
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="algorithms">Algorithms<a class="headerlink" href="#algorithms" title="Permanent link">&para;</a></h4>
+<h5 id="knnk">KnnK<a class="headerlink" href="#knnk" title="Permanent link">&para;</a></h5>
+<p>This uses the KNN method to estimate the entropy. From what I understand, it's the simplest method that may have some issues at higher dimensions and large number of samples (normal with KNN estimators). In relation to the other standard methods of density estimation, it is the most robust in higher dimensions due to its adaptive-like binning.</p>
+<ul>
+<li>A new class of random vector entropy estimators and its applications in testing statistical hypotheses - Goria et. al. (2005) - <a href="https://www.tandfonline.com/doi/full/10.1080/104852504200026815">Paper</a></li>
+<li>Nearest neighbor estimates of entropy - Singh et. al. (2003) - <a href="">paper</a></li>
+<li>A statistical estimate for the entropy of a random vector - Kozachenko et. al. (1987) - <a href="">paper</a></li>
+</ul>
+<h5 id="kdp">KDP<a class="headerlink" href="#kdp" title="Permanent link">&para;</a></h5>
+<p>This is the logical progression from KnnK. It uses KD partitioning trees (KDTree) algorithm to speed up the calculations I presume.</p>
+<ul>
+<li>Fast multidimensional entropy estimation by k-d partitioning - Stowell &amp; Plumbley (2009) - <a href="">Paper</a></li>
+</ul>
+<h5 id="expf">expF<a class="headerlink" href="#expf" title="Permanent link">&para;</a></h5>
+<p>This is the close-form expression for the Sharma-Mittal entropy calculation for expontial families. This estimates Y using the maximum likelihood estimation and then uses the analytical formula for the exponential family.</p>
+<ul>
+<li>A closed-form expression for the Sharma-Mittal entropy of exponential families - Nielsen &amp; Nock (2012) - <a href="">Paper</a></li>
+</ul>
+<h5 id="vme">vME<a class="headerlink" href="#vme" title="Permanent link">&para;</a></h5>
+<p>This estimates the Shannon differential entropy (H) using the von Mises expansion. </p>
+<ul>
+<li>Nonparametric von Mises estimators for entropies, divergences and mutual informations - Kandasamy et. al. (2015) - <a href="">Paper</a></li>
+</ul>
+<h5 id="ensemble">Ensemble<a class="headerlink" href="#ensemble" title="Permanent link">&para;</a></h5>
+<p>Estimates the entropy from the average entropy estimations on groups of samples</p>
+<p>This is a simple implementation with the freedom to choose the estimator <code>estimate_H</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># split into groups</span>
+<span class="k">for</span> <span class="n">igroup</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+    <span class="n">H</span> <span class="o">+=</span> <span class="n">estimate_H</span><span class="p">(</span><span class="n">igroup</span><span class="p">)</span>
+
+<span class="n">H</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span>
+</code></pre></div>
+
+<ul>
+<li>High-dimensional mutual information estimation for image registration - Kybic (2004) - <a href="">Paper</a></li>
+</ul>
+<h4 id="potential-new-experiments">Potential New Experiments<a class="headerlink" href="#potential-new-experiments" title="Permanent link">&para;</a></h4>
+<h4 id="voronoi">Voronoi<a class="headerlink" href="#voronoi" title="Permanent link">&para;</a></h4>
+<p>Estimates Shannon entropy using Voronoi regions. Apparently it is good for multi-dimensional densities.</p>
+<ul>
+<li>A new class of entropy estimators for multi-dimensional densities - Miller (2003) - <a href="">Paper</a>
+</div>
+</div></li>
+</ul>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="mutual-information">Mutual Information<a class="headerlink" href="#mutual-information" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+</div>
+</div>
+
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="total-correlation">Total Correlation<a class="headerlink" href="#total-correlation" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+</div>
+</div>
+
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h2 id="code">Code<a class="headerlink" href="#code" title="Permanent link">&para;</a></h2>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">cwd</span><span class="si">}</span><span class="s1">/../../src&#39;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">cwd</span><span class="si">}</span><span class="s1">/../../src/itetoolbox&#39;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">ite</span>
+<span class="c1"># from data.load_TishbyData import load_TishbyData</span>
+
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">autoreload</span>
+<span class="o">%</span><span class="n">autoreload</span> <span class="mi">2</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="data">Data<a class="headerlink" href="#data" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+We will simulate some data X that is normally distributed and Y which is X that has been rotated by some random matrix A. 
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.01</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>    <span class="c1"># reproducibility</span>
+<span class="n">n_samples</span>    <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">d_dimensions</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="c1"># create dataset X</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">d_dimensions</span><span class="p">)</span>
+
+<span class="c1"># do some random rotation</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">d_dimensions</span><span class="p">,</span> <span class="n">d_dimensions</span><span class="p">)</span>
+
+<span class="c1"># create dataset Y</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">A</span>
+</code></pre></div>
+
+</div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="entropy_1">Entropy<a class="headerlink" href="#entropy_1" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+In our experiments, we were only looking at Shannon entropy. It is the general case of Renyi's entropy as <span><span class="MathJax_Preview">\alpha \rightarrow 1</span><script type="math/tex">\alpha \rightarrow 1</script></span>. We chose not to look at Renyi's entropy because we did not want to go down a rabbit hole of measures that we cannont understand nor justify. So we stuck to the basics. It's also important to keep in mind that we were looking at measures that could calculate the joint entropy; i.e. for multivariate, multi-dimensional datasets.</p>
+<h2 id="algorithms_1">Algorithms<a class="headerlink" href="#algorithms_1" title="Permanent link">&para;</a></h2>
+<h3 id="knnk_1">KnnK<a class="headerlink" href="#knnk_1" title="Permanent link">&para;</a></h3>
+<p>This uses the KNN method to estimate the entropy. From what I understand, it's the simplest method that may have some issues at higher dimensions and large number of samples (normal with KNN estimators). </p>
+<ul>
+<li>A new class of random vector entropy estimators and its applications in testing statistical hypotheses - Goria et. al. (2005) - <a href="https://www.tandfonline.com/doi/full/10.1080/104852504200026815">Paper</a></li>
+<li>Nearest neighbor estimates of entropy - Singh et. al. (2003) - <a href="">paper</a></li>
+<li>A statistical estimate for the entropy of a random vector - Kozachenko et. al. (1987) - <a href="">paper</a></li>
+</ul>
+<p>This method works by calculating the nearest neighbors formula</p>
+<h3 id="kdp_1">KDP<a class="headerlink" href="#kdp_1" title="Permanent link">&para;</a></h3>
+<p>This is the logical progression from KnnK. It uses KD partitioning trees (KDTree) algorithm to speed up the calculations I presume.</p>
+<ul>
+<li>Fast multidimensional entropy estimation by k-d partitioning - Stowell &amp; Plumbley (2009) - <a href="">Paper</a></li>
+</ul>
+</div>
+</div>
+
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="algorithm">Algorithm<a class="headerlink" href="#algorithm" title="Permanent link">&para;</a></h4>
+<ol>
+<li>Calculate the KNN Distances using the distance matrix</li>
+<li>Calculate the Volume of the unit ball wrt d_dimensions</li>
+<li>Calculate the entropy measure</li>
+</ol>
+<p><span><span class="MathJax_Preview"><span><span class="MathJax_Preview">H = \log (N - 1) - \psi(k) + \log (v) + D * \frac{1}{N} \sum \log D</span><script type="math/tex">H = \log (N - 1) - \psi(k) + \log (v) + D * \frac{1}{N} \sum \log D</script></span></span><script type="math/tex"><span><span class="MathJax_Preview">H = \log (N - 1) - \psi(k) + \log (v) + D * \frac{1}{N} \sum \log D</span><script type="math/tex">H = \log (N - 1) - \psi(k) + \log (v) + D * \frac{1}{N} \sum \log D</script></span></script></span>
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">entropy_gaussian</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Entropy of a gaussian variable with covariance matrix C</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">C</span><span class="p">):</span> <span class="c1"># C is the variance</span>
+        <span class="k">return</span> <span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">))</span> <span class="o">+</span> <span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># dimension</span>
+        <span class="k">return</span> <span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="n">n</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">))</span> <span class="o">+</span> <span class="o">.</span><span class="mi">5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">det</span><span class="p">(</span><span class="n">C</span><span class="p">)))</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="shannon-entropy-knnkdp">Shannon Entropy (KNN/KDP)<a class="headerlink" href="#shannon-entropy-knnkdp" title="Permanent link">&para;</a></h4>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">gamma</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">NearestNeighbors</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="c1"># volume of unit ball</span>
+<span class="k">def</span> <span class="nf">volume_unit_ball</span><span class="p">(</span><span class="n">d_dimensions</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Volume of the d-dimensional unit ball</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    d_dimensions : int</span>
+<span class="sd">        Number of dimensions to estimate the volume</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    vol : float</span>
+<span class="sd">        The volume of the d-dimensional unit ball</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">d_dimensions</span><span class="p">)</span> <span class="p">)</span> <span class="o">/</span> <span class="n">gamma</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">d_dimensions</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="c1"># KNN Distances</span>
+<span class="k">def</span> <span class="nf">knn_distance</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s1">&#39;brute&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Light wrapper around sklearn library.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : np.ndarray, (n_samples x d_dimensions)</span>
+<span class="sd">        The data to find the nearest neighbors for.</span>
+
+<span class="sd">    n_neighbors : int, default=20</span>
+<span class="sd">        The number of nearest neighbors to find.</span>
+
+<span class="sd">    algorithm : str, default=&#39;brute&#39;, </span>
+<span class="sd">        The knn algorithm to use.</span>
+<span class="sd">        (&#39;brute&#39;, &#39;ball_tree&#39;, &#39;kd_tree&#39;, &#39;auto&#39;)</span>
+
+<span class="sd">    n_jobs : int, default=-1</span>
+<span class="sd">        The number of cores to use to find the nearest neighbors</span>
+
+<span class="sd">    kwargs : dict, Optional</span>
+<span class="sd">        Any extra keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distances : np.ndarray, (n_samples x d_dimensions)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">clf_knn</span> <span class="o">=</span> <span class="n">NearestNeighbors</span><span class="p">(</span>
+            <span class="n">n_neighbors</span><span class="o">=</span><span class="n">n_neighbors</span><span class="p">,</span>
+            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">clf_knn</span> <span class="o">=</span> <span class="n">NearestNeighbors</span><span class="p">(</span>
+            <span class="n">n_neighbors</span><span class="o">=</span><span class="n">n_neighbors</span><span class="p">,</span>
+            <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">clf_knn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">);</span>
+
+    <span class="n">dists</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">clf_knn</span><span class="o">.</span><span class="n">kneighbors</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dists</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="kn">import</span> <span class="n">gen_batches</span>
+
+<span class="k">class</span> <span class="nc">Ensemble</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">_fit_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+
+        <span class="n">Hs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">gen_batches</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch_size</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+            <span class="n">Hs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Hs</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">EntropyKNN</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">Ensemble</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s1">&#39;brute&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ensemble</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_neighbors</span> <span class="o">=</span> <span class="n">n_neighbors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">algorithm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span> <span class="o">=</span> <span class="n">ensemble</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">BaseEstimator</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vol</span> <span class="o">=</span> <span class="n">volume_unit_ball</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_ensemble</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+
+        <span class="c1"># 1. Calculate the K-nearest neighbors</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">knn_distance</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">n_neighbors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_neighbors</span><span class="p">,</span>
+            <span class="n">algorithm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
+            <span class="n">kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">psi</span><span class="p">(</span><span class="n">n_neighbors</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vol</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span> <span class="n">d_dimensions</span> <span class="o">/</span> <span class="n">n_samples</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">dist</span><span class="p">[:,</span> <span class="n">n_neighbors</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">H_x</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># parameters (default)</span>
+<span class="n">n_neighbors</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="s1">&#39;brute&#39;</span>
+<span class="n">n_jobs</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">ensemble</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;metric&#39;</span><span class="p">:</span> <span class="s1">&#39;euclidean&#39;</span><span class="p">}</span>
+
+<span class="c1"># initialize it estimator</span>
+<span class="n">clf_knnK</span> <span class="o">=</span> <span class="n">EntropyKNN</span><span class="p">(</span>
+    <span class="n">n_neighbors</span><span class="o">=</span><span class="n">n_neighbors</span><span class="p">,</span>
+    <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+    <span class="n">ensemble</span><span class="o">=</span><span class="n">ensemble</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span>
+
+<span class="p">)</span>
+
+<span class="c1"># estimate entropy</span>
+<span class="n">H_x</span> <span class="o">=</span> <span class="n">clf_knnK</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">H_y</span> <span class="o">=</span> <span class="n">clf_knnK</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H(X): </span><span class="si">{</span><span class="n">H_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H(Y): </span><span class="si">{</span><span class="n">H_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>H(X): 4.077 bits
+H(Y): 2.131 bits
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+Notice there are quite a lot of parameters we can change within the actual KNN estimation procedure. But the rest seems to be fairly consistent with not much tweaking we can do.
+</div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="ite-toolbox-implementation">ITE Toolbox implementation<a class="headerlink" href="#ite-toolbox-implementation" title="Permanent link">&para;</a></h4>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># parameters (default)</span>
+<span class="n">mult</span>        <span class="o">=</span> <span class="kc">True</span>
+<span class="n">knn_method</span>  <span class="o">=</span> <span class="s1">&#39;cKDTree&#39;</span>      <span class="c1"># fast version (slower version KNN)</span>
+<span class="n">k_neighbors</span> <span class="o">=</span> <span class="mi">10</span>             <span class="c1"># free parameter</span>
+<span class="n">eps</span>         <span class="o">=</span> <span class="mf">0.1</span>            <span class="c1"># free parameter</span>
+
+<span class="c1"># initialize it estimator</span>
+<span class="n">clf_knnK</span> <span class="o">=</span> <span class="n">ite</span><span class="o">.</span><span class="n">cost</span><span class="o">.</span><span class="n">BHShannon_KnnK</span><span class="p">(</span>
+    <span class="n">mult</span><span class="o">=</span><span class="n">mult</span><span class="p">,</span> 
+    <span class="n">knn_method</span><span class="o">=</span><span class="n">knn_method</span><span class="p">,</span>
+    <span class="n">k</span><span class="o">=</span><span class="n">k_neighbors</span><span class="p">,</span>
+    <span class="n">eps</span><span class="o">=</span><span class="n">eps</span>
+<span class="p">)</span>
+
+<span class="c1"># estimate entropy</span>
+<span class="n">H_x</span> <span class="o">=</span> <span class="n">clf_knnK</span><span class="o">.</span><span class="n">estimation</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">H_y</span> <span class="o">=</span> <span class="n">clf_knnK</span><span class="o">.</span><span class="n">estimation</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H(X): </span><span class="si">{</span><span class="n">H_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H(Y): </span><span class="si">{</span><span class="n">H_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>H(X): 4.132 bits
+H(Y): 2.208 bits
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+It seems like the numbers we get are quite similar.
+</div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="shannon-entropy-expf">Shannon Entropy: expF<a class="headerlink" href="#shannon-entropy-expf" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+This is the close-form expression for the Sharma-Mittal entropy calculation for expontial families. The Sharma-Mittal entropy is a generalization of the Shannon, Rényi and Tsallis entropy measurements. This estimates Y using the maximum likelihood estimation and then uses the analytical formula for the exponential family.</p>
+<ul>
+<li>A closed-form expression for the Sharma-Mittal entropy of exponential families - Nielsen &amp; Nock (2012) - <a href="">Paper</a></li>
+<li>Statistical exponential families: A digest with flash cards - <a href="https://arxiv.org/pdf/0911.4863.pdf">Paper</a></li>
+</ul>
+<p><strong>Source Parameters</strong></p>
+<div>
+<div class="MathJax_Preview">\Lambda = (\mu, \Sigma)</div>
+<script type="math/tex; mode=display">\Lambda = (\mu, \Sigma)</script>
+</div>
+<p>where <span><span class="MathJax_Preview">\mu \in \mathbb{R}^{d}</span><script type="math/tex">\mu \in \mathbb{R}^{d}</script></span> and <span><span class="MathJax_Preview">\Sigma &gt; 0</span><script type="math/tex">\Sigma > 0</script></span></p>
+<p><strong>Parameters</strong></p>
+<div>
+<div class="MathJax_Preview">\Theta = \left( \Sigma^{-1}\mu, \frac{1}{2}\Sigma^{-1} \right)</div>
+<script type="math/tex; mode=display">\Theta = \left( \Sigma^{-1}\mu, \frac{1}{2}\Sigma^{-1} \right)</script>
+</div>
+<p><strong>Log Normalizer</strong></p>
+<div>
+<div class="MathJax_Preview">F(\Theta) = \frac{1}{4} Tr( \theta^\top \Theta^{-1} \theta) - \frac{1}{2} \log|\Theta| + \frac{d}{2}\log \pi</div>
+<script type="math/tex; mode=display">F(\Theta) = \frac{1}{4} Tr( \theta^\top \Theta^{-1} \theta) - \frac{1}{2} \log|\Theta| + \frac{d}{2}\log \pi</script>
+</div>
+<p><strong>Gradient Log Normalizer</strong></p>
+<div>
+<div class="MathJax_Preview">\nabla F(\Theta) = \left( \frac{1}{2} \Theta^{-1}\theta, -\frac{1}{2} \Theta^{-1}- \frac{1}{4}(\Theta^{-1}\Theta)(\Theta^{-1}\Theta)^\top \right)</div>
+<script type="math/tex; mode=display">\nabla F(\Theta) = \left( \frac{1}{2} \Theta^{-1}\theta, -\frac{1}{2} \Theta^{-1}- \frac{1}{4}(\Theta^{-1}\Theta)(\Theta^{-1}\Theta)^\top \right)</script>
+</div>
+<p><strong>Final Entropy Calculation</strong></p>
+<p><span><span class="MathJax_Preview"><span><span class="MathJax_Preview">H = F(\Theta) - \langle F(\Theta), \nabla F(\Theta) \rangle</span><script type="math/tex">H = F(\Theta) - \langle F(\Theta), \nabla F(\Theta) \rangle</script></span></span><script type="math/tex"><span><span class="MathJax_Preview">H = F(\Theta) - \langle F(\Theta), \nabla F(\Theta) \rangle</span><script type="math/tex">H = F(\Theta) - \langle F(\Theta), \nabla F(\Theta) \rangle</script></span></script></span>
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_dims</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+
+<span class="c1"># source params, theta</span>
+<span class="n">theta_1</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">theta_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Source:&#39;</span><span class="p">,</span> <span class="n">theta_1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">theta_2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="c1"># natural params, eta</span>
+<span class="n">eta_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">theta_2</span><span class="p">)</span> <span class="o">@</span> <span class="n">theta_1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="n">eta_2</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">theta_2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Natural:&#39;</span><span class="p">,</span> <span class="n">eta_1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">eta_2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="c1"># log-normalizer, F(eta)</span>
+<span class="n">f_eta</span> <span class="o">=</span> <span class="o">.</span><span class="mi">25</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">eta_1</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">eta_2</span><span class="p">)</span> <span class="o">@</span> <span class="n">eta_1</span><span class="p">)</span> <span class="o">-</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">slogdet</span><span class="p">(</span><span class="n">eta_2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_dims</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> 
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Log Norm:&#39;</span><span class="p">,</span> <span class="n">f_eta</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="c1"># gradient log normalizer, dF(eta)</span>
+<span class="n">df_eta_1</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">eta_2</span><span class="p">)</span> <span class="o">@</span> <span class="n">eta_1</span>
+<span class="n">df_eta_2</span> <span class="o">=</span> <span class="o">-.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">eta_2</span><span class="p">)</span> <span class="o">-</span> <span class="o">.</span><span class="mi">25</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">eta_2</span><span class="p">)</span> <span class="o">-</span> <span class="n">eta_1</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">eta_2</span><span class="p">)</span> <span class="o">-</span> <span class="n">eta_1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Grad Log Norm:&#39;</span><span class="p">,</span> <span class="n">df_eta_1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">df_eta_2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="c1"># outer product</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">eta_1</span><span class="p">,</span> <span class="n">df_eta_1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">eta_2</span><span class="p">,</span> <span class="n">df_eta_2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">expF_entropy</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+
+    <span class="c1"># estimate Gaussian parameters</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="c1"># make Gaussian distribution</span>
+    <span class="n">norm_dist</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># estimate the entropy from closed form solution</span>
+    <span class="n">H_x</span> <span class="o">=</span> <span class="n">norm_dist</span><span class="o">.</span><span class="n">entropy</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">H_x</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">H_x</span> <span class="o">=</span> <span class="n">expF_entropy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">H_y</span> <span class="o">=</span> <span class="n">expF_entropy</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H(X): </span><span class="si">{</span><span class="n">H_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H(Y): </span><span class="si">{</span><span class="n">H_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>H(X): 4.195 bits
+H(Y): 1.329 bits
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+As you can see, it works well if the distribution is actuall Gaussian but it doesn't if it isn't.
+</div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">mean</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">norm_dist</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+
+<span class="n">H_x</span> <span class="o">=</span> <span class="n">norm_dist</span><span class="o">.</span><span class="n">entropy</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H(X): </span><span class="si">{</span><span class="n">H_x</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>H(X): 4.195 bits
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+</div>
+</div>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. estimate the maximum likelihood params</span>
+<span class="n">mean</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">inv_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">inv_cov</span> <span class="o">@</span> <span class="n">mean</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">inv_cov</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="n">mean</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">cov</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">inv_cov</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">t1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">t2</span><span class="o">.</span><span class="n">shape</span>
+
+<span class="c1"># Log Normalizer (Maximum Like)</span>
+<span class="n">F</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span> <span class="o">@</span> <span class="n">t1</span> <span class="o">@</span> <span class="n">t1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+<span class="c1"># Gradient Log Normalizer</span>
+<span class="n">alpha_grad</span> <span class="o">=</span> 
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-cyan-fg">  File </span><span class="ansi-green-fg">&#34;&lt;ipython-input-79-af7a3dc7f9a4&gt;&#34;</span><span class="ansi-cyan-fg">, line </span><span class="ansi-green-fg">14</span>
+<span class="ansi-red-fg">    alpha_grad =</span>
+                 ^
+<span class="ansi-red-fg">SyntaxError</span><span class="ansi-red-fg">:</span> invalid syntax
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">mean</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">cov</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">inv_cov</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">t1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">t2</span><span class="o">.</span><span class="n">shape</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>((3,), (3, 3), (3, 3), (3,), (3, 3))</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h5 id="vme_1">vME<a class="headerlink" href="#vme_1" title="Permanent link">&para;</a></h5>
+<p>This nonparametric method that estimates the Shannon differential entropy (H) using the von Mises expansion. This method has a fast convergence rate than the KDE and KNN methods. This algorithm does have and in addition the can be tuned using cross-validation techniques. It is also less expensive than the KDE in terms of the numerical integration whereas this method has closed form solutions for some families of von Mises expansions.</p>
+</div>
+</div>
+<ul>
+<li>Nonparametric von Mises estimators for entropies, divergences and mutual informations - Kandasamy et. al. (2015) - <a href="">Paper</a></li>
+</ul>
+<h5 id="ensemble_1">Ensemble<a class="headerlink" href="#ensemble_1" title="Permanent link">&para;</a></h5>
+<p>Estimates the entropy from the average entropy estimations on groups of samples</p>
+<p>This is a simple implementation with the freedom to choose the estimator <code>estimate_H</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># split into groups</span>
+<span class="k">for</span> <span class="n">igroup</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+    <span class="n">H</span> <span class="o">+=</span> <span class="n">estimate_H</span><span class="p">(</span><span class="n">igroup</span><span class="p">)</span>
+
+<span class="n">H</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span>
+</code></pre></div>
+
+<ul>
+<li>High-dimensional mutual information estimation for image registration - Kybic (2004) - <a href="">Paper</a></li>
+</ul>
+<h4 id="potential-new-experiments_1">Potential New Experiments<a class="headerlink" href="#potential-new-experiments_1" title="Permanent link">&para;</a></h4>
+<h4 id="voronoi_1">Voronoi<a class="headerlink" href="#voronoi_1" title="Permanent link">&para;</a></h4>
+<p>Estimates Shannon entropy using Voronoi regions. Apparently it is good for multi-dimensional densities.</p>
+<ul>
+<li>A new class of entropy estimators for multi-dimensional densities - Miller (2003) - <a href="">Paper</a>
+</div>
+</div></li>
+</ul>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="mutual-information_1">Mutual Information<a class="headerlink" href="#mutual-information_1" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+The estimation was carried out using the following relationship. Let <span><span class="MathJax_Preview">XY = [X, Y] \in \mathcal{R}^{N \times D}</span><script type="math/tex">XY = [X, Y] \in \mathcal{R}^{N \times D}</script></span>, where <span><span class="MathJax_Preview">D=D_1+D_2</span><script type="math/tex">D=D_1+D_2</script></span>.</p>
+<div>
+<div class="MathJax_Preview">I(XY) = \sum_{d=1}^D H(XY) - H(XY)</div>
+<script type="math/tex; mode=display">I(XY) = \sum_{d=1}^D H(XY) - H(XY)</script>
+</div>
+<p>The pseudo-code is fairly simple (in the MATLAB version).</p>
+<ol>
+<li>Organize the components</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">XY</span> <span class="o">=</span> <span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">]</span>
+</code></pre></div>
+
+<ol>
+<li>Estimate the joint entropy, <span><span class="MathJax_Preview">H(XY)</span><script type="math/tex">H(XY)</script></span></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">H_xy</span> <span class="o">=</span> <span class="o">-</span> <span class="n">estimate_H</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">XY</span><span class="p">)</span>     <span class="c1"># stack the vectors dimension-wise</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<ol>
+<li>
+<p>Estimate the marginals of XY; i.e. estimate X and Y individually, then sum them.
+<div class="highlight"><pre><span></span><code><span class="n">H_x_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+    <span class="c1"># estimate the entropy for each marginal</span>
+    <span class="p">[</span><span class="n">estimate_H</span><span class="p">(</span><span class="n">imarginal</span><span class="p">)</span> <span class="k">for</span> <span class="n">imarginal</span> <span class="ow">in</span> <span class="n">XY</span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Summation of the two quantities</p>
+</li>
+</ol>
+<p><div class="highlight"><pre><span></span><code><span class="n">MI_XY</span> <span class="o">=</span> <span class="n">H_x_y</span> <span class="o">+</span> <span class="n">H_xy</span>
+</code></pre></div>
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h4 id="naive">Naive<a class="headerlink" href="#naive" title="Permanent link">&para;</a></h4>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Ensemble</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_fit_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+
+        <span class="n">Hs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">gen_batches</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch_size</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+            <span class="n">Hs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">vol</span><span class="p">))</span>
+
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Hs</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">MutualInfoKNN</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s1">&#39;brute&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_neighbors</span> <span class="o">=</span> <span class="n">n_neighbors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">algorithm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">BaseEstimator</span><span class="p">:</span>
+
+        <span class="c1"># Calculate Volumes</span>
+        <span class="n">vol_xy</span> <span class="o">=</span> <span class="n">volume_unit_ball</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">vol_x</span> <span class="o">=</span> <span class="n">volume_unit_ball</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">vol_y</span> <span class="o">=</span> <span class="n">volume_unit_ball</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Calculate Joint Entropy</span>
+        <span class="n">H_xy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">]),</span> <span class="n">vol_xy</span><span class="p">)</span>
+
+        <span class="c1"># Calculate Marginal Probabilities</span>
+        <span class="n">H_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">vol_x</span><span class="p">)</span>
+        <span class="n">H_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">vol_y</span><span class="p">)</span>
+
+        <span class="c1"># Calculate Mutual Information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MI</span> <span class="o">=</span> <span class="n">H_x</span> <span class="o">+</span> <span class="n">H_y</span> <span class="o">-</span> <span class="n">H_xy</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vol</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+
+        <span class="c1"># 1. Calculate the K-nearest neighbors</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">knn_distance</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">n_neighbors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_neighbors</span><span class="p">,</span>
+            <span class="n">algorithm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
+            <span class="n">kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">psi</span><span class="p">(</span><span class="n">n_neighbors</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">vol</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span> <span class="n">d_dimensions</span> <span class="o">/</span> <span class="n">n_samples</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">dist</span><span class="p">[:,</span> <span class="n">n_neighbors</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MI</span>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># parameters (default)</span>
+<span class="n">n_neighbors</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="s1">&#39;brute&#39;</span>
+<span class="n">n_jobs</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">ensemble</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;metric&#39;</span><span class="p">:</span> <span class="s1">&#39;euclidean&#39;</span><span class="p">}</span>
+
+<span class="c1"># initialize it estimator</span>
+<span class="n">clf_knnK</span> <span class="o">=</span> <span class="n">MutualInfoKNN</span><span class="p">(</span>
+    <span class="n">n_neighbors</span><span class="o">=</span><span class="n">n_neighbors</span><span class="p">,</span>
+    <span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+    <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span>
+
+<span class="p">)</span>
+
+<span class="c1"># estimate entropy</span>
+<span class="n">MI_xy</span> <span class="o">=</span> <span class="n">clf_knnK</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H(X): </span><span class="si">{</span><span class="n">MI_xy</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>H(X): 6.427 bits
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<h3 id="ite-toolbox">ITE Toolbox<a class="headerlink" href="#ite-toolbox" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># parameters (default)</span>
+<span class="n">mult</span>       <span class="o">=</span> <span class="kc">True</span>          <span class="c1"># ??</span>
+<span class="n">kl_co_name</span> <span class="o">=</span> <span class="s1">&#39;BDKL_KnnK&#39;</span>   <span class="c1"># KLD calculator</span>
+<span class="n">kl_co_pars</span> <span class="o">=</span> <span class="kc">None</span>          <span class="c1"># parameters for the KLD calculator</span>
+
+<span class="c1"># initialize it estimator</span>
+<span class="n">clf_mi</span> <span class="o">=</span> <span class="n">ite</span><span class="o">.</span><span class="n">cost</span><span class="o">.</span><span class="n">MIShannon_DKL</span><span class="p">(</span>
+<span class="c1">#     mult=mult,</span>
+<span class="c1">#     kl_co_name=kl_co_name,</span>
+<span class="c1">#     kl_co_pars=kl_co_pars,</span>
+<span class="p">)</span>
+
+<span class="c1"># concat data</span>
+<span class="n">XY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># individual dimensions per</span>
+<span class="n">sub_dimensions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+
+<span class="c1"># estimate mutual information</span>
+<span class="n">mi_XY</span> <span class="o">=</span> <span class="n">clf_mi</span><span class="o">.</span><span class="n">estimation</span><span class="p">(</span><span class="n">XY</span><span class="p">,</span> <span class="n">sub_dimensions</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MI(X,Y): </span><span class="si">{</span><span class="n">mi_XY</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>MI(X,Y): 3.683 bits
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+</div>
+</div>
+<div class="highlight"><pre><span></span><code><span class="c1"># parameters (default)</span>
+<span class="n">mult</span>       <span class="o">=</span> <span class="kc">True</span>          <span class="c1"># ??</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;RBF&#39;</span><span class="p">,</span><span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>   <span class="c1"># KLD calculator</span>
+<span class="n">eta</span>  <span class="o">=</span> <span class="mf">0.01</span>          <span class="c1"># parameters for the KLD calculator</span>
+
+<span class="c1"># initialize it estimator</span>
+<span class="n">clf_mi</span> <span class="o">=</span> <span class="n">ite</span><span class="o">.</span><span class="n">cost</span><span class="o">.</span><span class="n">BIKGV</span><span class="p">(</span>
+<span class="c1">#     mult=mult,</span>
+<span class="c1">#     kernel=kernel,</span>
+<span class="c1">#     eta=eta,</span>
+<span class="p">)</span>
+
+<span class="c1"># concat data</span>
+<span class="n">XY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># individual dimensions per</span>
+<span class="n">sub_dimensions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+
+<span class="c1"># estimate mutual information</span>
+<span class="n">mi_XY</span> <span class="o">=</span> <span class="n">clf_mi</span><span class="o">.</span><span class="n">estimation</span><span class="p">(</span><span class="n">XY</span><span class="p">,</span> <span class="n">sub_dimensions</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MI(X,Y): </span><span class="si">{</span><span class="n">mi_XY</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>MI(X,Y): 2.062 bits
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+I expect there to be some MI between X and Y since it is a rotation of the original distribution.
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1"></p>
+<hr />
+<h3 id="total-correlation-multi-information-co-information">Total Correlation (Multi-Information, Co-Information)<a class="headerlink" href="#total-correlation-multi-information-co-information" title="Permanent link">&para;</a></h3>
+<p></div>
+</div></p>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+The estimation was carried out using the following relationship:</p>
+<p><span><span class="MathJax_Preview"><span><span class="MathJax_Preview">I(x_1, x_2, \ldots, x_D) = \sum_{d=1}^D H(x_d) - H(X)</span><script type="math/tex">I(x_1, x_2, \ldots, x_D) = \sum_{d=1}^D H(x_d) - H(X)</script></span></span><script type="math/tex"><span><span class="MathJax_Preview">I(x_1, x_2, \ldots, x_D) = \sum_{d=1}^D H(x_d) - H(X)</span><script type="math/tex">I(x_1, x_2, \ldots, x_D) = \sum_{d=1}^D H(x_d) - H(X)</script></span></script></span>
+</div>
+</div></p>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># parameters (default)</span>
+<span class="n">mult</span>       <span class="o">=</span> <span class="kc">True</span>
+<span class="n">kl_co_name</span> <span class="o">=</span> <span class="s1">&#39;BDKL_KnnK&#39;</span>
+<span class="n">kl_co_pars</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1"># initialize it estimator</span>
+<span class="n">clf_mi</span> <span class="o">=</span> <span class="n">ite</span><span class="o">.</span><span class="n">cost</span><span class="o">.</span><span class="n">MIShannon_DKL</span><span class="p">(</span>
+    <span class="n">mult</span><span class="o">=</span><span class="n">mult</span><span class="p">,</span>
+    <span class="n">kl_co_name</span><span class="o">=</span><span class="n">kl_co_name</span><span class="p">,</span>
+    <span class="n">kl_co_pars</span><span class="o">=</span><span class="n">kl_co_pars</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># concat data</span>
+<span class="n">sub_dimensions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+<span class="c1"># estimate mutual information</span>
+<span class="n">tc_X</span> <span class="o">=</span> <span class="n">clf_mi</span><span class="o">.</span><span class="n">estimation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">sub_dimensions</span><span class="p">)</span>
+<span class="n">tc_Y</span> <span class="o">=</span> <span class="n">clf_mi</span><span class="o">.</span><span class="n">estimation</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">sub_dimensions</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shannon Total Correlation, TC(X): </span><span class="si">{</span><span class="n">tc_X</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shannon Total Correlation, TC(Y): </span><span class="si">{</span><span class="n">tc_Y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> bits&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Shannon Total Correlation, TC(X): -0.002 bits
+Shannon Total Correlation, TC(Y): 2.365 bits
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="cell border-box-sizing text_cell rendered">
+<p><div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+This makes since given that the original distribution <span><span class="MathJax_Preview">X</span><script type="math/tex">X</script></span> should have no correlations between dimensions because it is Gaussian. The rotation of <span><span class="MathJax_Preview">X</span><script type="math/tex">X</script></span> by some random matrix <span><span class="MathJax_Preview">A</span><script type="math/tex">A</script></span>, <span><span class="MathJax_Preview">Y=AX^{\top}</span><script type="math/tex">Y=AX^{\top}</script></span>, means that we have added some correlations between dimensions. We see that as the TC is higher.
+</div>
+</div></p>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code>
+</code></pre></div>
+
+</div>
+
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../../demos/2_estimate_sigma/" title="2 estimate sigma" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                2 estimate sigma
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../1_fake_distributions/" title="1 fake distributions" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                1 fake distributions
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" /></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2020 J. Emmanuel Johnson
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+  <div class="md-footer-social">
+    
+      
+      
+      <a href="https://github.com/jejjohnson" target="_blank" rel="noopener" title="github.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://twitter.com/jejjohnson" target="_blank" rel="noopener" title="twitter.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://linkedin.com/in/jejjohnson" target="_blank" rel="noopener" title="linkedin.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+      </a>
+    
+      
+      
+      <a href="https://jejjohnson.netlify.com" target="_blank" rel="noopener" title="jejjohnson.netlify.com" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M336.5 160C322 70.7 287.8 8 248 8s-74 62.7-88.5 152h177zM152 256c0 22.2 1.2 43.5 3.3 64h185.3c2.1-20.5 3.3-41.8 3.3-64s-1.2-43.5-3.3-64H155.3c-2.1 20.5-3.3 41.8-3.3 64zm324.7-96c-28.6-67.9-86.5-120.4-158-141.6 24.4 33.8 41.2 84.7 50 141.6h108zM177.2 18.4C105.8 39.6 47.8 92.1 19.3 160h108c8.7-56.9 25.5-107.8 49.9-141.6zM487.4 192H372.7c2.1 21 3.3 42.5 3.3 64s-1.2 43-3.3 64h114.6c5.5-20.5 8.6-41.8 8.6-64s-3.1-43.5-8.5-64zM120 256c0-21.5 1.2-43 3.3-64H8.6C3.2 212.5 0 233.8 0 256s3.2 43.5 8.6 64h114.6c-2-21-3.2-42.5-3.2-64zm39.5 96c14.5 89.3 48.7 152 88.5 152s74-62.7 88.5-152h-177zm159.3 141.6c71.4-21.2 129.4-73.7 158-141.6h-108c-8.8 56.9-25.6 107.8-50 141.6zM19.3 352c28.6 67.9 86.5 120.4 158 141.6-24.4-33.8-41.2-84.7-50-141.6h-108z"/></svg>
+      </a>
+    
+  </div>
+
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../../assets/javascripts/vendor.f81b9e8b.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.23546af0.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../assets/javascripts/worker/search.58d22e8e.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+        <script src="../../../javascripts/extra.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+      
+    
+  </body>
+</html>
