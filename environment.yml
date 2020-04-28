@@ -9,6 +9,7 @@ dependencies:
 - scipy             # Scientific Computing
 - pandas            # Data structure
 - scikit-learn      # Machine Learning
+- statsmodels
 # Plotting Libraries
 - matplotlib        # standard plotting library
 - seaborn           # Stats viz library
@@ -17,14 +18,19 @@ dependencies:
 - nodejs            # for extensions in jupyterlab
 - tqdm              # Progress bars
 - ipywidgets        #
-# Testing
-- pytest            # Modern Testing
-# Formatter
-- black             # Uncompromising formatter
-- isort             # sorts packages
-- flake8
-- pylint
-# Gaussian Processes
 - pip
 - pip:
-  - joblib          # Embarssingly parallel
+    - joblib          # Embarssingly parallel
+    # Formatters
+    - black                   # no nonsense formatter
+    - pylint                  # linter
+    - isort                   # imports sorter
+    - flake8                  # linter
+    - mypy                    # type checker
+    - pytest                  # testing suite
+    - pyprojroot              # resolves paths in notebooks
+    # Documentation
+    - mkdocs-material 
+    - mknotebooks
+    - pymdown-extensions 
+    - pdoc3

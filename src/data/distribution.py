@@ -1,9 +1,10 @@
-from typing import Optional, NamedTuple
-import scipy.io as scio
 import collections
 from dataclasses import dataclass
-from sklearn.preprocessing import StandardScaler
+from typing import NamedTuple, Optional
+
 import numpy as np
+import scipy.io as scio
+from sklearn.preprocessing import StandardScaler
 
 
 class Inputs(NamedTuple):

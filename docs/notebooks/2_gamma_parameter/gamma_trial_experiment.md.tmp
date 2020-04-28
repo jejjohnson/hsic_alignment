@@ -1,0 +1,238 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import sys, os
+import warnings
+import tqdm
+import random
+import pandas as pd
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+# Insert path to model directory,.
+cwd = os.getcwd()
+path = f"{cwd}/../../src"
+sys.path.insert(0, path)
+
+# toy datasets
+from data.toy import RBIGData
+
+# Experiments
+from experiments.param_space import ExperimentGamma
+
+# Kernel Dependency measure
+from models.dependence import HSIC, train_rbf_hsic
+from models.kernel import estimate_sigma, sigma_to_gamma, gamma_to_sigma, get_param_grid
+
+# RBIG IT measures
+from models.ite_algorithms import run_rbig_models
+
+import scipy.io as scio
+
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+
+warnings.filterwarnings('ignore') # get rid of annoying warnings
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+SAVE_PATH = "/home/emmanuel/projects/2019_hsic_align/results/hsic/"
+
+clf_exp = ExperimentGamma(
+    seed=123,
+    n_trials=1,
+    mi_points=10_000,
+    n_noise=50,
+    n_gamma=50,
+    factor=2,
+    sigma_est='median',
+    save_path=SAVE_PATH,
+    save_name='gamma_v1_median',
+)
+
+# run full experiment
+clf_exp.run_experiment()
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Function: line
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-6-92a6f1263002&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">     14</span> 
+<span class="ansi-green-intense-fg ansi-bold">     15</span> <span class="ansi-red-fg"># run full experiment</span>
+<span class="ansi-green-fg">---&gt; 16</span><span class="ansi-red-fg"> </span>clf_exp<span class="ansi-blue-fg">.</span>run_experiment<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/projects/2019_hsic_align/notebooks/2_gamma_parameter/../../src/experiments/param_space.py</span> in <span class="ansi-cyan-fg">run_experiment</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    121</span>                                 hsic_method<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    122</span>                                 hsic_score<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 123</span><span class="ansi-red-fg">                                 </span>mi_score<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    124</span>                             )
+<span class="ansi-green-intense-fg ansi-bold">    125</span> 
+
+<span class="ansi-green-fg">~/projects/2019_hsic_align/notebooks/2_gamma_parameter/../../src/experiments/param_space.py</span> in <span class="ansi-cyan-fg">append_results</span><span class="ansi-blue-fg">(self, results_df, function, trial, noise, init_gamma, gamma, hsic_method, hsic_score, mi_score)</span>
+<span class="ansi-green-intense-fg ansi-bold">    234</span>                 <span class="ansi-blue-fg">&#34;mi&#34;</span><span class="ansi-blue-fg">:</span> mi_score<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    235</span>             },
+<span class="ansi-green-fg">--&gt; 236</span><span class="ansi-red-fg">             </span>ignore_index<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    237</span>         )
+<span class="ansi-green-intense-fg ansi-bold">    238</span> 
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/frame.py</span> in <span class="ansi-cyan-fg">append</span><span class="ansi-blue-fg">(self, other, ignore_index, verify_integrity, sort)</span>
+<span class="ansi-green-intense-fg ansi-bold">   7121</span>             ignore_index<span class="ansi-blue-fg">=</span>ignore_index<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   7122</span>             verify_integrity<span class="ansi-blue-fg">=</span>verify_integrity<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">-&gt; 7123</span><span class="ansi-red-fg">             </span>sort<span class="ansi-blue-fg">=</span>sort<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   7124</span>         )
+<span class="ansi-green-intense-fg ansi-bold">   7125</span> 
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/reshape/concat.py</span> in <span class="ansi-cyan-fg">concat</span><span class="ansi-blue-fg">(objs, axis, join, join_axes, ignore_index, keys, levels, names, verify_integrity, sort, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">    256</span>     )
+<span class="ansi-green-intense-fg ansi-bold">    257</span> 
+<span class="ansi-green-fg">--&gt; 258</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> op<span class="ansi-blue-fg">.</span>get_result<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    259</span> 
+<span class="ansi-green-intense-fg ansi-bold">    260</span> 
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/reshape/concat.py</span> in <span class="ansi-cyan-fg">get_result</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    471</span> 
+<span class="ansi-green-intense-fg ansi-bold">    472</span>             new_data = concatenate_block_managers(
+<span class="ansi-green-fg">--&gt; 473</span><span class="ansi-red-fg">                 </span>mgrs_indexers<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>new_axes<span class="ansi-blue-fg">,</span> concat_axis<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>axis<span class="ansi-blue-fg">,</span> copy<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>copy
+<span class="ansi-green-intense-fg ansi-bold">    474</span>             )
+<span class="ansi-green-intense-fg ansi-bold">    475</span>             <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> self<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/managers.py</span> in <span class="ansi-cyan-fg">concatenate_block_managers</span><span class="ansi-blue-fg">(mgrs_indexers, axes, concat_axis, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2052</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   2053</span>             b = make_block(
+<span class="ansi-green-fg">-&gt; 2054</span><span class="ansi-red-fg">                 </span>concatenate_join_units<span class="ansi-blue-fg">(</span>join_units<span class="ansi-blue-fg">,</span> concat_axis<span class="ansi-blue-fg">,</span> copy<span class="ansi-blue-fg">=</span>copy<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   2055</span>                 placement<span class="ansi-blue-fg">=</span>placement<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   2056</span>             )
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">concatenate_join_units</span><span class="ansi-blue-fg">(join_units, concat_axis, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">    251</span>     to_concat = [
+<span class="ansi-green-intense-fg ansi-bold">    252</span>         ju<span class="ansi-blue-fg">.</span>get_reindexed_values<span class="ansi-blue-fg">(</span>empty_dtype<span class="ansi-blue-fg">=</span>empty_dtype<span class="ansi-blue-fg">,</span> upcasted_na<span class="ansi-blue-fg">=</span>upcasted_na<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 253</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">for</span> ju <span class="ansi-green-fg">in</span> join_units
+<span class="ansi-green-intense-fg ansi-bold">    254</span>     ]
+<span class="ansi-green-intense-fg ansi-bold">    255</span> 
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">&lt;listcomp&gt;</span><span class="ansi-blue-fg">(.0)</span>
+<span class="ansi-green-intense-fg ansi-bold">    251</span>     to_concat = [
+<span class="ansi-green-intense-fg ansi-bold">    252</span>         ju<span class="ansi-blue-fg">.</span>get_reindexed_values<span class="ansi-blue-fg">(</span>empty_dtype<span class="ansi-blue-fg">=</span>empty_dtype<span class="ansi-blue-fg">,</span> upcasted_na<span class="ansi-blue-fg">=</span>upcasted_na<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 253</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">for</span> ju <span class="ansi-green-fg">in</span> join_units
+<span class="ansi-green-intense-fg ansi-bold">    254</span>     ]
+<span class="ansi-green-intense-fg ansi-bold">    255</span> 
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">get_reindexed_values</span><span class="ansi-blue-fg">(self, empty_dtype, upcasted_na)</span>
+<span class="ansi-green-intense-fg ansi-bold">    234</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    235</span>             <span class="ansi-green-fg">for</span> ax<span class="ansi-blue-fg">,</span> indexer <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>indexers<span class="ansi-blue-fg">.</span>items<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 236</span><span class="ansi-red-fg">                 </span>values <span class="ansi-blue-fg">=</span> algos<span class="ansi-blue-fg">.</span>take_nd<span class="ansi-blue-fg">(</span>values<span class="ansi-blue-fg">,</span> indexer<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span>ax<span class="ansi-blue-fg">,</span> fill_value<span class="ansi-blue-fg">=</span>fill_value<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    237</span> 
+<span class="ansi-green-intense-fg ansi-bold">    238</span>         <span class="ansi-green-fg">return</span> values
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/algorithms.py</span> in <span class="ansi-cyan-fg">take_nd</span><span class="ansi-blue-fg">(arr, indexer, axis, out, fill_value, mask_info, allow_fill)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1717</span> 
+<span class="ansi-green-intense-fg ansi-bold">   1718</span>     func = _get_take_nd_function(
+<span class="ansi-green-fg">-&gt; 1719</span><span class="ansi-red-fg">         </span>arr<span class="ansi-blue-fg">.</span>ndim<span class="ansi-blue-fg">,</span> arr<span class="ansi-blue-fg">.</span>dtype<span class="ansi-blue-fg">,</span> out<span class="ansi-blue-fg">.</span>dtype<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span>axis<span class="ansi-blue-fg">,</span> mask_info<span class="ansi-blue-fg">=</span>mask_info
+<span class="ansi-green-intense-fg ansi-bold">   1720</span>     )
+<span class="ansi-green-intense-fg ansi-bold">   1721</span>     func<span class="ansi-blue-fg">(</span>arr<span class="ansi-blue-fg">,</span> indexer<span class="ansi-blue-fg">,</span> out<span class="ansi-blue-fg">,</span> fill_value<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/algorithms.py</span> in <span class="ansi-cyan-fg">_get_take_nd_function</span><span class="ansi-blue-fg">(ndim, arr_dtype, out_dtype, axis, mask_info)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1481</span> <span class="ansi-green-fg">def</span> _get_take_nd_function<span class="ansi-blue-fg">(</span>ndim<span class="ansi-blue-fg">,</span> arr_dtype<span class="ansi-blue-fg">,</span> out_dtype<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">,</span> mask_info<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   1482</span>     <span class="ansi-green-fg">if</span> ndim <span class="ansi-blue-fg">&lt;=</span> <span class="ansi-cyan-fg">2</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">-&gt; 1483</span><span class="ansi-red-fg">         </span>tup <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">(</span>arr_dtype<span class="ansi-blue-fg">.</span>name<span class="ansi-blue-fg">,</span> out_dtype<span class="ansi-blue-fg">.</span>name<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1484</span>         <span class="ansi-green-fg">if</span> ndim <span class="ansi-blue-fg">==</span> <span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   1485</span>             func <span class="ansi-blue-fg">=</span> _take_1d_dict<span class="ansi-blue-fg">.</span>get<span class="ansi-blue-fg">(</span>tup<span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/numpy/core/_dtype.py</span> in <span class="ansi-cyan-fg">_name_get</span><span class="ansi-blue-fg">(dtype)</span>
+<span class="ansi-green-intense-fg ansi-bold">    325</span> 
+<span class="ansi-green-intense-fg ansi-bold">    326</span>     <span class="ansi-red-fg"># Builtin classes are documented as returning a &#34;bit name&#34;</span>
+<span class="ansi-green-fg">--&gt; 327</span><span class="ansi-red-fg">     </span>name <span class="ansi-blue-fg">=</span> dtype<span class="ansi-blue-fg">.</span>type<span class="ansi-blue-fg">.</span>__name__
+<span class="ansi-green-intense-fg ansi-bold">    328</span> 
+<span class="ansi-green-intense-fg ansi-bold">    329</span>     <span class="ansi-red-fg"># handle bool_, str_, etc</span>
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+
+

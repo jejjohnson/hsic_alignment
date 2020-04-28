@@ -1,8 +1,10 @@
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
+
 import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
 import numpy as np
+import pandas as pd
+import seaborn as sns
+from src.features.utils import df_query, subset_dataframe, get_correlations
 
 plt.style.use(["ggplot", "seaborn-paper"])
 
@@ -31,7 +33,80 @@ def plot_scorer(results_df: pd.DataFrame, scorer: str) -> None:
     return None
 
 
-# plot the results
+def plot_score_vs_mi(
+    df: pd.DataFrame,
+    scorer: Optional[str] = None,
+    #     methods: List[str]=['silverman'],
+    #     percent: Optional[List[str]]=None,
+    compare: str = "standard",
+):
+
+    # copy dataframe to prevent overwriting
+    sub_df = df.copy()
+    # segment method
+    if scorer is not None:
+        sub_df = subset_dataframe(sub_df, [df_query("scorer", [scorer])])
+
+    #     # get percentage (if necessary)
+    #     if percent is not None:
+    #         sub_df = df[df["sigma_method"].isin(percent)]
+
+    # dropcolumns with dimensions and samples
+    sub_df = sub_df.drop(
+        [
+            "dimensions",
+            "samples",
+            "std",
+            "nu",
+            "trial",
+            "dataset",
+            "sigma_X",
+            "sigma_Y",
+        ],
+        axis=1,
+    )
+
+    if compare == "standard":
+        true_df = sub_df[sub_df["standardize"] == True]
+        true_corrs = get_correlations(true_df)
+        true_label = (
+            f"Standardized, (p:{true_corrs.pearson:.2f}, sp:{true_corrs.spearman:.2f})"
+        )
+
+        false_df = sub_df[sub_df["standardize"] == False]
+        false_corrs = get_correlations(false_df)
+        false_label = f"Non-Standardized, (p:{false_corrs.pearson:.2f}, sp:{false_corrs.spearman:.2f})"
+
+    elif compare == "dimension":
+        true_df = sub_df[sub_df["per_dimension"] == True]
+        true_corrs = get_correlations(true_df)
+        true_label = (
+            f"Per Dimension, (p:{true_corrs.pearson:.2f}, sp:{true_corrs.spearman:.2f})"
+        )
+
+        false_df = sub_df[sub_df["per_dimension"] == False]
+        false_corrs = get_correlations(false_df)
+        false_label = (
+            f"Same, (p:{false_corrs.pearson:.2f}, sp:{false_corrs.spearman:.2f})"
+        )
+    else:
+        raise ValueError(f"Unrecognized compare entry: {compare}")
+
+    # plot
+
+    fig, ax = plt.subplots()
+
+    ax.scatter(true_df.score, true_df.mutual_info, marker="o", s=30, label=true_label)
+    ax.scatter(
+        false_df.score, false_df.mutual_info, marker="x", s=30, label=false_label
+    )
+    ax.legend()
+    ax.set_yscale("symlog")
+    ax.set_xlabel("Score")
+    ax.set_ylabel("Mutual Information")
+    #     ax.set_title(f"{scorer.upper()}")
+    # ax.text(0.18, 0.18, r, {'color': 'C0', 'fontsize': 16})
+    return fig, ax
 
 
 def plot_scorer_mi(

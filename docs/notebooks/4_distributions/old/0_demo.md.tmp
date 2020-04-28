@@ -1,0 +1,409 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+# Distribution Experiment
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+import sys, os
+import warnings
+import tqdm
+import random
+import pandas as pd
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+# Insert path to model directory,.
+cwd = os.getcwd()
+path = f"{cwd}/../../src"
+sys.path.insert(0, path)
+
+# toy datasets
+from data.toy import RBIGData
+
+# Experiments
+from experiments.distributions import DistributionExp
+
+# Kernel Dependency measure
+from models.dependence import HSIC, train_rbf_hsic
+from models.kernel import estimate_sigma, sigma_to_gamma, gamma_to_sigma, get_param_grid
+
+# RBIG IT measures
+from models.ite_algorithms import run_rbig_models
+
+import scipy.io as scio
+
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+
+warnings.filterwarnings('ignore') # get rid of annoying warnings
+
+%load_ext autoreload
+%autoreload 2
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+path
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;/home/emmanuel/projects/2019_hsic_align/notebooks/4_distributions/../../src&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+## Datasets
+
+* Samples - [500, 1K, 5K, 10K, 30K, 50K]
+* Dimensions - [ 2, 3, 10, 50, 100]
+* trials - [1,5]
+* IT measures - [TC, H, MI, KLD]
+* Distributions - [Linear, Gaussian, T-Student]
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+### Example - Gaussian Distribution
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+data_path = "/media/disk/erc/papers/2018_RBIG_IT_measures/2018_RBIG_IT_measures/reproducible_results/DATA/"
+gauss_data = f"{data_path}MI_gaus/"
+sample_data = "DATA_MI_gaus_nd_3_Ns_500_tryal_1.mat"
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+dat = scio.loadmat(f"{gauss_data}{sample_data}")
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+X, Y, mi_val = dat['X'], dat['Y'], dat['MI_ori_nats']
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+#### Using the Helper function
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+from typing import Optional
+
+class MIData:
+    """MI Data
+    
+    
+    Dataset
+    -------
+    trials = 1:5
+    samples = 50, 100, 500, 1_000, 5_000
+    dimensions = 2, 3, 10, 50, 100
+    std = 1:11
+    nu = 1:9
+    """
+    def __init__(self, distribution: Optional['gauss'])-> None:
+        
+        self.distribution = distribution
+        self.data_path = "/media/disk/erc/papers/2019_HSIC_ALIGN/data/mi_distributions/"
+        
+        if self.distribution == 'gauss':
+            self.dist_path = f"{self.data_path}MI_gaus/"
+        elif self.distribution == 'tstudent':
+            self.dist_path = f"{self.data_path}MI_tstu/"
+        else:
+            raise ValueError(f"Unrecognized Dataset: {distribution}")
+            
+    def get_data(self, samples=50, dimensions=2, std=1, trial=1, nu=1):
+        
+        if self.distribution == 'gauss':
+            dat = scio.loadmat(
+                f"{self.dist_path}DATA_MI_gaus_nd_{dimensions}_"
+                f"Ns_{samples}_std_{std}_tryal_{trial}.mat"
+            )
+            
+            return dat['X'], dat['Y'], float(dat['MI_ori_nats'][0][0])
+        elif self.distribution == 'tstudent':
+            dat = scio.loadmat(
+                f"{self.dist_path}DATA_MI_tstu_nd_{dimensions}_"
+                f"Ns_{samples}_tryal_{trial}_nu_{nu}.mat"
+            )
+            
+            return dat['X'], dat['Y'], float(dat['MI_ori_nats'][0][0])
+        else:
+            raise ValueError(f"Unrecognized distribution '{self.distribution}'")
+            
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+itera = {'1': 'a', '2': 'b'}
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+for iitera in itera.items():
+    print(iitera[0], iitera[1])
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>1 a
+2 b
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+dataset = 'tstudent'
+
+mi_loader = MIData('tstudent')
+
+x, y, mi = mi_loader.get_data()
+```
+
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered" markdown="1">
+<div class="inner_cell" markdown="1">
+<div class="text_cell_render border-box-sizing rendered_html" markdown="1">
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+SAVE_PATH = "/home/emmanuel/projects/2019_hsic_align/results/hsic/"
+
+clf_exp = DistributionExp(
+    seed=123,
+    factor=1,
+    sigma_est='median',
+    n_gamma=10,
+    save_path=SAVE_PATH,
+    save_name='dist_v2_belkin',
+)
+
+# run full experiment
+clf_exp.run_experiment()
+```
+
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Function: gauss
+</pre>
+</div>
+</div>
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-6-6466ca7e5a66&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">     11</span> 
+<span class="ansi-green-intense-fg ansi-bold">     12</span> <span class="ansi-red-fg"># run full experiment</span>
+<span class="ansi-green-fg">---&gt; 13</span><span class="ansi-red-fg"> </span>clf_exp<span class="ansi-blue-fg">.</span>run_experiment<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/projects/2019_hsic_align/notebooks/4_distributions/../../src/experiments/distributions.py</span> in <span class="ansi-cyan-fg">run_experiment</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    223</span>                                         hsic_method<span class="ansi-blue-fg">=</span>hsic_method<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    224</span>                                         hsic_score<span class="ansi-blue-fg">=</span>hsic_score<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 225</span><span class="ansi-red-fg">                                         </span>mi_score<span class="ansi-blue-fg">=</span>mi_score<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    226</span>                                     )
+<span class="ansi-green-intense-fg ansi-bold">    227</span> 
+
+<span class="ansi-green-fg">~/projects/2019_hsic_align/notebooks/4_distributions/../../src/experiments/distributions.py</span> in <span class="ansi-cyan-fg">append_results</span><span class="ansi-blue-fg">(self, results_df, dataset, trial, n_samples, d_dimensions, std, nu, gamma, gamma_median, gamma_silv, gamma_scott, gamma_belkin, hsic_method, hsic_score, mi_score)</span>
+<span class="ansi-green-intense-fg ansi-bold">    332</span>                 <span class="ansi-blue-fg">&#34;mi_score&#34;</span><span class="ansi-blue-fg">:</span> mi_score<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    333</span>             },
+<span class="ansi-green-fg">--&gt; 334</span><span class="ansi-red-fg">             </span>ignore_index<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    335</span>         )
+<span class="ansi-green-intense-fg ansi-bold">    336</span> 
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/frame.py</span> in <span class="ansi-cyan-fg">append</span><span class="ansi-blue-fg">(self, other, ignore_index, verify_integrity, sort)</span>
+<span class="ansi-green-intense-fg ansi-bold">   7103</span>                 columns<span class="ansi-blue-fg">=</span>combined_columns<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   7104</span>             )
+<span class="ansi-green-fg">-&gt; 7105</span><span class="ansi-red-fg">             </span>other <span class="ansi-blue-fg">=</span> other<span class="ansi-blue-fg">.</span>_convert<span class="ansi-blue-fg">(</span>datetime<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">,</span> timedelta<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   7106</span>             <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> self<span class="ansi-blue-fg">.</span>columns<span class="ansi-blue-fg">.</span>equals<span class="ansi-blue-fg">(</span>combined_columns<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   7107</span>                 self <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>reindex<span class="ansi-blue-fg">(</span>columns<span class="ansi-blue-fg">=</span>combined_columns<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/generic.py</span> in <span class="ansi-cyan-fg">_convert</span><span class="ansi-blue-fg">(self, datetime, numeric, timedelta, coerce, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">   6044</span>                 timedelta<span class="ansi-blue-fg">=</span>timedelta<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   6045</span>                 coerce<span class="ansi-blue-fg">=</span>coerce<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">-&gt; 6046</span><span class="ansi-red-fg">                 </span>copy<span class="ansi-blue-fg">=</span>copy<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   6047</span>             )
+<span class="ansi-green-intense-fg ansi-bold">   6048</span>         ).__finalize__(self)
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/managers.py</span> in <span class="ansi-cyan-fg">convert</span><span class="ansi-blue-fg">(self, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    582</span> 
+<span class="ansi-green-intense-fg ansi-bold">    583</span>     <span class="ansi-green-fg">def</span> convert<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 584</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>apply<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;convert&#34;</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    585</span> 
+<span class="ansi-green-intense-fg ansi-bold">    586</span>     <span class="ansi-green-fg">def</span> replace<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> value<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/managers.py</span> in <span class="ansi-cyan-fg">apply</span><span class="ansi-blue-fg">(self, f, axes, filter, do_integrity_check, consolidate, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    436</span>                     kwargs<span class="ansi-blue-fg">[</span>k<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> obj<span class="ansi-blue-fg">.</span>reindex<span class="ansi-blue-fg">(</span>b_items<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span>axis<span class="ansi-blue-fg">,</span> copy<span class="ansi-blue-fg">=</span>align_copy<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    437</span> 
+<span class="ansi-green-fg">--&gt; 438</span><span class="ansi-red-fg">             </span>applied <span class="ansi-blue-fg">=</span> getattr<span class="ansi-blue-fg">(</span>b<span class="ansi-blue-fg">,</span> f<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    439</span>             result_blocks <span class="ansi-blue-fg">=</span> _extend_blocks<span class="ansi-blue-fg">(</span>applied<span class="ansi-blue-fg">,</span> result_blocks<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    440</span> 
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/blocks.py</span> in <span class="ansi-cyan-fg">convert</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2821</span> 
+<span class="ansi-green-intense-fg ansi-bold">   2822</span>         <span class="ansi-green-fg">if</span> by_item <span class="ansi-green-fg">and</span> <span class="ansi-green-fg">not</span> self<span class="ansi-blue-fg">.</span>_is_single_block<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">-&gt; 2823</span><span class="ansi-red-fg">             </span>blocks <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>split_and_operate<span class="ansi-blue-fg">(</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> f<span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">False</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2824</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   2825</span>             values <span class="ansi-blue-fg">=</span> f<span class="ansi-blue-fg">(</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>values<span class="ansi-blue-fg">.</span>ravel<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/blocks.py</span> in <span class="ansi-cyan-fg">split_and_operate</span><span class="ansi-blue-fg">(self, mask, f, inplace)</span>
+<span class="ansi-green-intense-fg ansi-bold">    491</span>             <span class="ansi-red-fg"># need a new block</span>
+<span class="ansi-green-intense-fg ansi-bold">    492</span>             <span class="ansi-green-fg">if</span> m<span class="ansi-blue-fg">.</span>any<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 493</span><span class="ansi-red-fg">                 </span>nv <span class="ansi-blue-fg">=</span> f<span class="ansi-blue-fg">(</span>m<span class="ansi-blue-fg">,</span> v<span class="ansi-blue-fg">,</span> i<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    494</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    495</span>                 nv <span class="ansi-blue-fg">=</span> v <span class="ansi-green-fg">if</span> inplace <span class="ansi-green-fg">else</span> v<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/internals/blocks.py</span> in <span class="ansi-cyan-fg">f</span><span class="ansi-blue-fg">(m, v, i)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2812</span>         <span class="ansi-green-fg">def</span> f<span class="ansi-blue-fg">(</span>m<span class="ansi-blue-fg">,</span> v<span class="ansi-blue-fg">,</span> i<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   2813</span>             shape <span class="ansi-blue-fg">=</span> v<span class="ansi-blue-fg">.</span>shape
+<span class="ansi-green-fg">-&gt; 2814</span><span class="ansi-red-fg">             </span>values <span class="ansi-blue-fg">=</span> fn<span class="ansi-blue-fg">(</span>v<span class="ansi-blue-fg">.</span>ravel<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>fn_kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2815</span>             <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>values<span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>ndarray<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   2816</span>                 <span class="ansi-red-fg"># TODO: allow EA once reshape is supported</span>
+
+<span class="ansi-green-fg">~/.conda/envs/it4dnn/lib/python3.6/site-packages/pandas/core/dtypes/cast.py</span> in <span class="ansi-cyan-fg">soft_convert_objects</span><span class="ansi-blue-fg">(values, datetime, numeric, timedelta, coerce, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">    844</span>         <span class="ansi-red-fg"># bound of nanosecond-resolution 64-bit integers.</span>
+<span class="ansi-green-intense-fg ansi-bold">    845</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 846</span><span class="ansi-red-fg">             </span>values <span class="ansi-blue-fg">=</span> lib<span class="ansi-blue-fg">.</span>maybe_convert_objects<span class="ansi-blue-fg">(</span>values<span class="ansi-blue-fg">,</span> convert_datetime<span class="ansi-blue-fg">=</span>datetime<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    847</span>         <span class="ansi-green-fg">except</span> OutOfBoundsDatetime<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    848</span>             <span class="ansi-green-fg">pass</span>
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered" markdown="1">
+<div class="input">
+
+```python
+
+```
+
+</div>
+
+</div>
+
+

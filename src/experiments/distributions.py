@@ -1,4 +1,29 @@
-import os, sys
+import argparse
+import os
+import random
+import sys
+import warnings
+from typing import Dict, Optional, Tuple
+
+# Plotting Procedures
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from scipy.spatial.distance import pdist, squareform
+from sklearn.gaussian_process.kernels import RBF
+# Kernel Dependency measure
+from sklearn.preprocessing import StandardScaler
+from tqdm import tqdm
+
+# toy datasets
+from data.distribution import DataParams, Inputs
+# experiment helpers
+from experiments.utils import dict_product, run_parallel_step
+from models.dependence import HSICModel
+# Plotting
+from visualization.distribution import plot_scorer
 
 # Insert path to model directory...
 cwd = os.getcwd()
@@ -9,26 +34,11 @@ sys.path.insert(0, project_path)
 pysim_path = f"/home/emmanuel/code/pysim/"
 sys.path.insert(0, pysim_path)
 
-import warnings
-from typing import Optional, Tuple, Dict
-from tqdm import tqdm
-import random
-import pandas as pd
-import numpy as np
-import argparse
-import random
-import pandas as pd
 
 
 random.seed(123)
 
-# toy datasets
-from data.distribution import DataParams, Inputs
 
-# Kernel Dependency measure
-from sklearn.preprocessing import StandardScaler
-from sklearn.gaussian_process.kernels import RBF
-from models.dependence import HSICModel
 
 # from pysim.kernel.utils import estimate_sigma
 
@@ -36,17 +46,8 @@ from models.dependence import HSICModel
 # RBIG IT measures
 # from models.ite_algorithms import run_rbig_models
 
-# Plotting
-from visualization.distribution import plot_scorer
 
-# experiment helpers
-from experiments.utils import dict_product, run_parallel_step
-from tqdm import tqdm
 
-# Plotting Procedures
-import matplotlib
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 RES_PATH = (
     "/home/emmanuel/projects/2019_hsic_align/data/results/distributions/mutual_info/"
@@ -105,9 +106,6 @@ def get_parameters(
     return params, loop_params
 
 
-from typing import Optional
-from scipy.spatial.distance import pdist, squareform
-from models.dependence import HSICModel
 
 
 def scotts_factor(X: np.ndarray) -> float:

@@ -1,0 +1,1693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>src.models.dependence API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.models.dependence</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import sys, os
+
+# Insert path to package,.
+pysim_path = f&#34;/home/emmanuel/code/pysim/&#34;
+sys.path.insert(0, pysim_path)
+
+# Kernel Dependency measure
+import numpy as np
+from typing import Optional, Callable, Union, List, Tuple, Dict
+from dataclasses import dataclass
+
+
+@dataclass
+class HSICModel:
+    &#34;&#34;&#34;HSICModel as a form of a dataclass with a score method.
+    
+    This initializes the parameters and then fits to some input
+    data and gives out a score.
+    
+    
+    Parameters
+    ----------
+    kernel : str, default=&#39;rbf&#39;
+        the kernel function 
+
+    bias : bool, default=True
+        option for the bias term (only affects the HSIC method)
+
+    gamma_X : float, (optional, default=None)
+        gamma parameter for the kernel matrix of X
+
+    gamma_Y : float, (optional, default=None)
+        gamma parameter for the kernel matrix of Y
+
+    subsample : int, (optional, default=None)
+        option to subsample the X, Y
+    
+    Example
+    --------
+    &gt;&gt; from src.models.dependence import HSICModel
+    &gt;&gt; from sklearn import datasets
+    &gt;&gt; X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
+    &gt;&gt; Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
+    &gt;&gt; hsic_model = HSICModel()
+    &gt;&gt; hsic_model.gamma_X = 100 
+    &gt;&gt; hsic_model.gamma_Y = 0.01
+    &gt;&gt; hsic_score = hsic_model.score(X, Y, &#39;hsic&#39;)
+    &gt;&gt; print(hsic_score)
+    0.00042726396990996684
+    &#34;&#34;&#34;
+
+    kernel_X: str = &#34;rbf&#34;
+    kernel_Y: Optional[str] = &#34;rbf&#34;
+    bias: bool = True
+    gamma_X: Optional[float] = None
+    gamma_Y: Optional[float] = None
+    subsample: Optional[int] = None
+    kernel_kwargs_X: Optional[Dict] = None
+    kernel_kwargs_Y: Optional[Dict] = None
+
+    def get_score(
+        self, X: np.ndarray, Y: np.ndarray, method: str = &#34;hsic&#34;, **kwargs
+    ) -&gt; float:
+        &#34;&#34;&#34;method to get the HSIC score
+        
+        Parameters
+        ----------
+        X : np.ndarray, (n_samples, n_features)
+        
+        Y : np.ndarray, (n_samples, n_features)
+        
+        method : str, default = &#39;hsic&#39;
+            {&#39;hsic&#39;, &#39;ka&#39;, &#39;cka&#39;}
+        
+        kwargs : dict, (optional)
+        
+        Returns
+        -------
+        score : float
+            the score based on the hsic method proposed above
+        &#34;&#34;&#34;
+        if method == &#34;hsic&#34;:
+            # change params for HSIC
+            self.normalize = False
+            self.center = True
+        elif method == &#34;ka&#34;:
+            # change params for Kernel Alignment
+            self.normalize = True
+            self.center = False
+        elif method == &#34;cka&#34;:
+            # change params for centered Kernel Alignment
+            self.normalize = True
+            self.center = True
+        else:
+            raise ValueError(f&#34;Unrecognized hsic method: {method}&#34;)
+
+        # initialize HSIC model
+        clf_hsic = HSIC(
+            kernel_X=self.kernel_X,
+            kernel_Y=self.kernel_Y,
+            center=self.center,
+            subsample=self.subsample,
+            bias=self.bias,
+            gamma_X=self.gamma_X,
+            gamma_Y=self.gamma_Y,
+            kernel_params_X=self.kernel_kwargs_X,
+            kernel_params_Y=self.kernel_kwargs_Y,
+            **kwargs,
+        )
+
+        # calculate HSIC return scorer
+        clf_hsic.fit(X, Y)
+
+        # return score
+        return clf_hsic.score(X, normalize=self.normalize)
+
+
+from typing import Callable, Optional, Union
+
+import numpy as np
+from sklearn.base import BaseEstimator
+from sklearn.kernel_approximation import Nystroem, RBFSampler
+from sklearn.metrics.pairwise import linear_kernel, pairwise_kernels
+from sklearn.preprocessing import KernelCenterer
+from sklearn.utils import check_array, check_random_state
+
+from src.models.utils import estimate_gamma
+
+
+class HSIC(BaseEstimator):
+    &#34;&#34;&#34;Hilbert-Schmidt Independence Criterion (HSIC). This is
+    a method for measuring independence between two variables.
+
+    Methods in the Literature
+
+    * HSIC - centered, unnormalized
+    * KA - uncentered, normalized
+    * CKA - centered, normalized
+    
+    Parameters
+    ----------
+    center : bool, default=True
+        The option to center the kernel matrices after construction
+    
+    bias : bool, default=True
+        To add the bias for the scaling. Only necessary if calculating HSIC alone.
+
+    subsample : int, default=None
+        The option to subsample the data.
+
+    random_state : int, default=123
+        The random state for the subsample.
+
+    kernel : string or callable, default=&#34;linear&#34;
+        Kernel mapping used internally. A callable should accept two arguments
+        and the keyword arguments passed to this object as kernel_params, and
+        should return a floating point number. Set to &#34;precomputed&#34; in
+        order to pass a precomputed kernel matrix to the estimator
+        methods instead of samples.
+    
+    gamma_X : float, default=None
+        Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+        and sigmoid kernels. Used only by the X parameter. 
+        Interpretation of the default value is left to the kernel; 
+        see the documentation for sklearn.metrics.pairwise.
+        Ignored by other kernels.
+    
+    
+    gamma_Y : float, default=None
+        The same gamma parameter as the X. If None, the gamma will be estimated.
+    
+    degree : float, default=3
+        Degree of the polynomial kernel. Ignored by other kernels.
+    
+    coef0 : float, default=1
+        Zero coefficient for polynomial and sigmoid kernels.
+        Ignored by other kernels.
+    
+    kernel_params : mapping of string to any, optional
+        Additional parameters (keyword arguments) for kernel function passed
+        as callable object.
+    
+    Attributes
+    ----------
+    hsic_value : float
+        The HSIC value is scored after fitting.
+        
+    Information
+    -----------
+    Author : J. Emmanuel Johnson
+    Email  : jemanjohnson34@gmail.com
+    Date   : 14-Feb-2019
+
+    Example
+    -------
+    &gt;&gt; samples, features = 100, 50
+    &gt;&gt; X = np.random.randn(samples, features)
+    &gt;&gt; A = np.random.rand(features, features)
+    &gt;&gt; Y = X @ A
+    &gt;&gt; hsic_clf = HSIC(center=True, kernel=&#39;linear&#39;)
+    &gt;&gt; hsic_clf.fit(X, Y)
+    &gt;&gt; cka_score = hsic_clf.score(X)
+    &gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        gamma_X: Optional[float] = None,
+        gamma_Y: Optional[float] = None,
+        kernel_X: Optional[Union[Callable, str]] = &#34;linear&#34;,
+        kernel_Y: Optional[Union[Callable, str]] = &#34;linear&#34;,
+        degree: float = 3,
+        coef0: float = 1,
+        kernel_params_X: Optional[dict] = None,
+        kernel_params_Y: Optional[dict] = None,
+        random_state: Optional[int] = None,
+        center: Optional[int] = True,
+        subsample: Optional[int] = None,
+        bias: bool = True,
+    ):
+        self.gamma_X = gamma_X
+        self.gamma_Y = gamma_Y
+        self.center = center
+        self.kernel_X = kernel_X
+        self.kernel_Y = kernel_Y
+        self.degree = degree
+        self.coef0 = coef0
+        self.kernel_params_X = kernel_params_X
+        self.kernel_params_Y = kernel_params_Y
+        self.random_state = random_state
+        self.rng = check_random_state(random_state)
+        self.subsample = subsample
+        self.bias = bias
+
+    def fit(self, X, Y):
+
+        # Check sizes of X, Y
+        X = check_array(X, ensure_2d=True)
+        Y = check_array(Y, ensure_2d=True)
+
+        # Check samples are the same
+        assert (
+            X.shape[0] == Y.shape[0]
+        ), f&#34;Samples of X ({X.shape[0]}) and Samples of Y ({Y.shape[0]}) are not the same&#34;
+
+        self.n_samples = X.shape[0]
+        self.dx_dimensions = X.shape[1]
+        self.dy_dimensions = Y.shape[1]
+
+        # subsample data if necessary
+        if self.subsample is not None:
+            X = self.rng.permutation(X)[: self.subsample, :]
+            Y = self.rng.permutation(Y)[: self.subsample, :]
+
+        self.X_train_ = X
+        self.Y_train_ = Y
+
+        # Calculate the kernel matrices
+        K_x = self.compute_kernel(
+            X, kernel=self.kernel_X, gamma=self.gamma_X, params=self.kernel_params_X
+        )
+        K_y = self.compute_kernel(
+            Y, kernel=self.kernel_Y, gamma=self.gamma_Y, params=self.kernel_params_Y
+        )
+
+        # Center Kernel
+        # H = np.eye(n_samples) - (1 / n_samples) * np.ones(n_samples)
+        # K_xc = K_x @ H
+        if self.center == True:
+            K_x = KernelCenterer().fit_transform(K_x)
+            K_y = KernelCenterer().fit_transform(K_y)
+
+        # Compute HSIC value
+        self.hsic_value = np.sum(K_x * K_y)
+
+        # Calculate magnitudes
+        self.K_x_norm = np.linalg.norm(K_x)
+        self.K_y_norm = np.linalg.norm(K_y)
+
+        return self
+
+    def compute_kernel(self, X, Y=None, kernel=&#34;rbf&#34;, gamma=None, params=None):
+        # check if kernel is callable
+        if callable(kernel) and params == None:
+            params = {}
+        else:
+            # estimate the gamma parameter
+            if gamma is None:
+                gamma = estimate_gamma(X)
+
+            # set parameters for pairwise kernel
+            params = {&#34;gamma&#34;: gamma, &#34;degree&#34;: self.degree, &#34;coef0&#34;: self.coef0}
+        return pairwise_kernels(X, Y, metric=kernel, filter_params=True, **params)
+
+    @property
+    def _pairwise(self):
+        return self.kernel == &#34;precomputed&#34;
+
+    def score(self, X, y=None, normalize=False):
+        &#34;&#34;&#34;This is not needed. It&#39;s only needed to comply with sklearn API.
+        
+        We will use the target kernel alignment algorithm as a score
+        function. This can be used to find the best parameters.&#34;&#34;&#34;
+
+        if normalize == True:
+
+            return self.hsic_value / self.K_x_norm / self.K_y_norm
+
+        elif normalize == False:
+
+            if self.bias:
+                self.hsic_bias = 1 / (self.n_samples ** 2)
+            else:
+                self.hsic_bias = 1 / (self.n_samples - 1) ** 2
+
+            return self.hsic_bias * self.hsic_value
+        else:
+            raise ValueError(f&#34;Unrecognized normalize argument: {normalize}&#34;)
+
+
+class RandomizedHSIC(BaseEstimator):
+    &#34;&#34;&#34;Hilbert-Schmidt Independence Criterion (HSIC). This is
+    a method for measuring independence between two variables. This method
+    uses the Nystrom method as an approximation to the large kernel matrix.
+    Typically this works really well as it is data-dependent; thus it will
+    converge to the real kernel matrix as the number of components increases.
+
+    Methods in the Literature
+
+    * HSIC - centered, unnormalized
+    * KA - uncentered, normalized
+    * CKA - centered, normalized
+    
+    Parameters
+    ----------
+    center : bool, default=True
+        The option to center the kernel matrices after construction
+    
+    bias : bool, default=True
+        To add the bias for the scaling. Only necessary if calculating HSIC alone.
+
+    subsample : int, default=None
+        The option to subsample the data.
+
+    random_state : int, default=123
+        The random state for the subsample.
+
+    kernel : string or callable, default=&#34;linear&#34;
+        Kernel mapping used internally. A callable should accept two arguments
+        and the keyword arguments passed to this object as kernel_params, and
+        should return a floating point number. Set to &#34;precomputed&#34; in
+        order to pass a precomputed kernel matrix to the estimator
+        methods instead of samples.
+    
+    gamma_X : float, default=None
+        Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+        and sigmoid kernels. Used only by the X parameter. 
+        Interpretation of the default value is left to the kernel; 
+        see the documentation for sklearn.metrics.pairwise.
+        Ignored by other kernels.
+    gamma_Y : float, default=None
+        The same gamma parameter as the X. If None, the same gamma_X will be
+        used for the Y.
+    
+    degree : float, default=3
+        Degree of the polynomial kernel. Ignored by other kernels.
+    
+    coef0 : float, default=1
+        Zero coefficient for polynomial and sigmoid kernels.
+        Ignored by other kernels.
+    
+    kernel_params : mapping of string to any, optional
+        Additional parameters (keyword arguments) for kernel function passed
+        as callable object.
+    
+    Attributes
+    ----------
+    hsic_value : float
+        The HSIC value is scored after fitting.
+        
+    Information
+    -----------
+    Author : J. Emmanuel Johnson
+    Email  : jemanjohnson34@gmail.com
+    Date   : 14-Feb-2019
+
+    Example
+    -------
+    &gt;&gt; samples, features, components = 100, 50, 10
+    &gt;&gt; X = np.random.randn(samples, features)
+    &gt;&gt; A = np.random.rand(features, features)
+    &gt;&gt; Y = X @ A
+    &gt;&gt; rhsic_clf = RandomizeHSIC(center=True, n_components=components)
+    &gt;&gt; rhsic_clf.fit(X, Y)
+    &gt;&gt; cka_score = rhsic_clf.score(X)
+    &gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        n_components: int = 100,
+        gamma_X: Optional[None] = None,
+        gamma_Y: Optional[None] = None,
+        kernel: Union[Callable, str] = &#34;linear&#34;,
+        degree: float = 3,
+        coef0: float = 1,
+        kernel_params: Optional[dict] = None,
+        random_state: Optional[int] = None,
+        center: Optional[int] = True,
+        normalized: Optional[bool] = True,
+        subsample: Optional[int] = None,
+        bias: bool = True,
+    ):
+        self.n_components = n_components
+        self.gamma_X = gamma_X
+        self.gamma_Y = gamma_Y
+        self.center = center
+        self.kernel = kernel
+        self.degree = degree
+        self.coef0 = coef0
+        self.kernel_params = kernel_params
+        self.random_state = random_state
+        self.rng = check_random_state(random_state)
+        self.subsample = subsample
+        self.bias = bias
+
+    def fit(self, X, Y):
+
+        # Check sizes of X, Y
+        X = check_array(X, ensure_2d=True)
+        Y = check_array(Y, ensure_2d=True)
+
+        # Check samples are the same
+        assert (
+            X.shape[0] == Y.shape[0]
+        ), f&#34;Samples of X ({X.shape[0]}) and Samples of Y ({Y.shape[0]}) are not the same&#34;
+
+        self.n_samples = X.shape[0]
+        self.dx_dimensions = X.shape[1]
+        self.dy_dimensions = Y.shape[1]
+
+        # subsample data if necessary
+        if self.subsample is not None:
+            X = self.rng.permutation(X)[: self.subsample, :]
+            Y = self.rng.permutation(Y)[: self.subsample, :]
+
+        self.X_train_ = X
+        self.Y_train_ = Y
+
+        # Calculate Kernel Matrices
+        Zx = self.compute_kernel(X, gamma=self.gamma_X)
+        Zy = self.compute_kernel(Y, gamma=self.gamma_Y)
+
+        # Center Kernel
+        # H = np.eye(n_samples) - (1 / n_samples) * np.ones(n_samples)
+        # K_xc = K_x @ H
+        if self.center == True:
+            Zx = Zx - Zx.mean(axis=0)
+            Zy = Zy - Zy.mean(axis=0)
+
+        # Compute HSIC value
+        if self.n_components &lt; self.n_samples:
+            Rxy = Zx.T @ Zy
+            self.hsic_value = np.sum(Rxy * Rxy)
+
+            # Calculate magnitudes
+            self.Zx_norm = np.linalg.norm(Zx.T @ Zx)
+            # print(&#34;Norm (FxF):&#34;, np.linalg.norm(Zx.T @ Zx))
+            # print(&#34;Norm (NxN):&#34;, np.linalg.norm(Zx @ Zx.T))
+            self.Zy_norm = np.linalg.norm(Zy.T @ Zy)
+            # print(&#34;Norm (FxF):&#34;, np.linalg.norm(Zy.T @ Zy))
+            # print(&#34;Norm (NxN):&#34;, np.linalg.norm(Zy @ Zy.T))
+
+        else:
+            Rxx = Zx @ Zx.T
+            Ryy = Zy @ Zy.T
+            self.hsic_value = np.sum(Rxx * Ryy)
+
+            # Calculate magnitudes
+            self.Zx_norm = np.linalg.norm(Zx @ Zx.T)
+            self.Zy_norm = np.linalg.norm(Zy @ Zy.T)
+
+        return self
+
+    def compute_kernel(self, X, Y=None, gamma=None, *args, **kwargs):
+
+        # estimate gamma if None
+        if gamma is None:
+            gamma = estimate_gamma(X)
+
+        # initialize RBF kernel
+        nystrom_kernel = Nystroem(
+            gamma=gamma,
+            kernel=self.kernel,
+            n_components=self.n_components,
+            coef0=self.coef0,
+            degree=self.degree,
+            random_state=self.random_state,
+            *args,
+            **kwargs,
+        )
+
+        # transform data
+        return nystrom_kernel.fit_transform(X)
+
+    def score(self, X, y=None, normalize=False):
+        &#34;&#34;&#34;This is not needed. It&#39;s only needed to comply with sklearn API.
+        
+        We will use the target kernel alignment algorithm as a score
+        function. This can be used to find the best parameters.&#34;&#34;&#34;
+
+        if normalize == True:
+
+            return self.hsic_value / self.Zx_norm / self.Zy_norm
+
+        elif normalize == False:
+
+            if self.bias:
+                self.hsic_bias = 1 / (self.n_samples ** 2)
+            else:
+                self.hsic_bias = 1 / (self.n_samples - 1) ** 2
+
+            return self.hsic_bias * self.hsic_value
+        else:
+            raise ValueError(f&#34;Unrecognized normalize argument: {normalize}&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.models.dependence.HSIC"><code class="flex name class">
+<span>class <span class="ident">HSIC</span></span>
+<span>(</span><span>gamma_X: Union[float, NoneType] = None, gamma_Y: Union[float, NoneType] = None, kernel_X: Union[Callable, str, NoneType] = 'linear', kernel_Y: Union[Callable, str, NoneType] = 'linear', degree: float = 3, coef0: float = 1, kernel_params_X: Union[dict, NoneType] = None, kernel_params_Y: Union[dict, NoneType] = None, random_state: Union[int, NoneType] = None, center: Union[int, NoneType] = True, subsample: Union[int, NoneType] = None, bias: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Hilbert-Schmidt Independence Criterion (HSIC). This is
+a method for measuring independence between two variables.</p>
+<p>Methods in the Literature</p>
+<ul>
+<li>HSIC - centered, unnormalized</li>
+<li>KA - uncentered, normalized</li>
+<li>CKA - centered, normalized</li>
+</ul>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>The option to center the kernel matrices after construction</dd>
+<dt><strong><code>bias</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>To add the bias for the scaling. Only necessary if calculating HSIC alone.</dd>
+<dt><strong><code>subsample</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
+<dd>The option to subsample the data.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>int</code>, default=<code>123</code></dt>
+<dd>The random state for the subsample.</dd>
+<dt><strong><code>kernel</code></strong> :&ensp;<code>string</code> or <code>callable</code>, default=<code>"linear"</code></dt>
+<dd>Kernel mapping used internally. A callable should accept two arguments
+and the keyword arguments passed to this object as kernel_params, and
+should return a floating point number. Set to "precomputed" in
+order to pass a precomputed kernel matrix to the estimator
+methods instead of samples.</dd>
+<dt><strong><code>gamma_X</code></strong> :&ensp;<code>float</code>, default=<code>None</code></dt>
+<dd>Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+and sigmoid kernels. Used only by the X parameter.
+Interpretation of the default value is left to the kernel;
+see the documentation for sklearn.metrics.pairwise.
+Ignored by other kernels.</dd>
+<dt><strong><code>gamma_Y</code></strong> :&ensp;<code>float</code>, default=<code>None</code></dt>
+<dd>The same gamma parameter as the X. If None, the gamma will be estimated.</dd>
+<dt><strong><code>degree</code></strong> :&ensp;<code>float</code>, default=<code>3</code></dt>
+<dd>Degree of the polynomial kernel. Ignored by other kernels.</dd>
+<dt><strong><code>coef0</code></strong> :&ensp;<code>float</code>, default=<code>1</code></dt>
+<dd>Zero coefficient for polynomial and sigmoid kernels.
+Ignored by other kernels.</dd>
+<dt><strong><code>kernel_params</code></strong> :&ensp;<code>mapping</code> of <code>string to any</code>, optional</dt>
+<dd>Additional parameters (keyword arguments) for kernel function passed
+as callable object.</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>hsic_value</code></strong> :&ensp;<code>float</code></dt>
+<dd>The HSIC value is scored after fitting.</dd>
+</dl>
+<h2 id="information">Information</h2>
+<p>Author : J. Emmanuel Johnson
+Email
+: jemanjohnson34@gmail.com
+Date
+: 14-Feb-2019</p>
+<h2 id="example">Example</h2>
+<blockquote>
+<blockquote>
+<p>samples, features = 100, 50
+X = np.random.randn(samples, features)
+A = np.random.rand(features, features)
+Y = X @ A
+hsic_clf = HSIC(center=True, kernel='linear')
+hsic_clf.fit(X, Y)
+cka_score = hsic_clf.score(X)
+print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")</p>
+</blockquote>
+</blockquote></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSIC(BaseEstimator):
+    &#34;&#34;&#34;Hilbert-Schmidt Independence Criterion (HSIC). This is
+    a method for measuring independence between two variables.
+
+    Methods in the Literature
+
+    * HSIC - centered, unnormalized
+    * KA - uncentered, normalized
+    * CKA - centered, normalized
+    
+    Parameters
+    ----------
+    center : bool, default=True
+        The option to center the kernel matrices after construction
+    
+    bias : bool, default=True
+        To add the bias for the scaling. Only necessary if calculating HSIC alone.
+
+    subsample : int, default=None
+        The option to subsample the data.
+
+    random_state : int, default=123
+        The random state for the subsample.
+
+    kernel : string or callable, default=&#34;linear&#34;
+        Kernel mapping used internally. A callable should accept two arguments
+        and the keyword arguments passed to this object as kernel_params, and
+        should return a floating point number. Set to &#34;precomputed&#34; in
+        order to pass a precomputed kernel matrix to the estimator
+        methods instead of samples.
+    
+    gamma_X : float, default=None
+        Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+        and sigmoid kernels. Used only by the X parameter. 
+        Interpretation of the default value is left to the kernel; 
+        see the documentation for sklearn.metrics.pairwise.
+        Ignored by other kernels.
+    
+    
+    gamma_Y : float, default=None
+        The same gamma parameter as the X. If None, the gamma will be estimated.
+    
+    degree : float, default=3
+        Degree of the polynomial kernel. Ignored by other kernels.
+    
+    coef0 : float, default=1
+        Zero coefficient for polynomial and sigmoid kernels.
+        Ignored by other kernels.
+    
+    kernel_params : mapping of string to any, optional
+        Additional parameters (keyword arguments) for kernel function passed
+        as callable object.
+    
+    Attributes
+    ----------
+    hsic_value : float
+        The HSIC value is scored after fitting.
+        
+    Information
+    -----------
+    Author : J. Emmanuel Johnson
+    Email  : jemanjohnson34@gmail.com
+    Date   : 14-Feb-2019
+
+    Example
+    -------
+    &gt;&gt; samples, features = 100, 50
+    &gt;&gt; X = np.random.randn(samples, features)
+    &gt;&gt; A = np.random.rand(features, features)
+    &gt;&gt; Y = X @ A
+    &gt;&gt; hsic_clf = HSIC(center=True, kernel=&#39;linear&#39;)
+    &gt;&gt; hsic_clf.fit(X, Y)
+    &gt;&gt; cka_score = hsic_clf.score(X)
+    &gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        gamma_X: Optional[float] = None,
+        gamma_Y: Optional[float] = None,
+        kernel_X: Optional[Union[Callable, str]] = &#34;linear&#34;,
+        kernel_Y: Optional[Union[Callable, str]] = &#34;linear&#34;,
+        degree: float = 3,
+        coef0: float = 1,
+        kernel_params_X: Optional[dict] = None,
+        kernel_params_Y: Optional[dict] = None,
+        random_state: Optional[int] = None,
+        center: Optional[int] = True,
+        subsample: Optional[int] = None,
+        bias: bool = True,
+    ):
+        self.gamma_X = gamma_X
+        self.gamma_Y = gamma_Y
+        self.center = center
+        self.kernel_X = kernel_X
+        self.kernel_Y = kernel_Y
+        self.degree = degree
+        self.coef0 = coef0
+        self.kernel_params_X = kernel_params_X
+        self.kernel_params_Y = kernel_params_Y
+        self.random_state = random_state
+        self.rng = check_random_state(random_state)
+        self.subsample = subsample
+        self.bias = bias
+
+    def fit(self, X, Y):
+
+        # Check sizes of X, Y
+        X = check_array(X, ensure_2d=True)
+        Y = check_array(Y, ensure_2d=True)
+
+        # Check samples are the same
+        assert (
+            X.shape[0] == Y.shape[0]
+        ), f&#34;Samples of X ({X.shape[0]}) and Samples of Y ({Y.shape[0]}) are not the same&#34;
+
+        self.n_samples = X.shape[0]
+        self.dx_dimensions = X.shape[1]
+        self.dy_dimensions = Y.shape[1]
+
+        # subsample data if necessary
+        if self.subsample is not None:
+            X = self.rng.permutation(X)[: self.subsample, :]
+            Y = self.rng.permutation(Y)[: self.subsample, :]
+
+        self.X_train_ = X
+        self.Y_train_ = Y
+
+        # Calculate the kernel matrices
+        K_x = self.compute_kernel(
+            X, kernel=self.kernel_X, gamma=self.gamma_X, params=self.kernel_params_X
+        )
+        K_y = self.compute_kernel(
+            Y, kernel=self.kernel_Y, gamma=self.gamma_Y, params=self.kernel_params_Y
+        )
+
+        # Center Kernel
+        # H = np.eye(n_samples) - (1 / n_samples) * np.ones(n_samples)
+        # K_xc = K_x @ H
+        if self.center == True:
+            K_x = KernelCenterer().fit_transform(K_x)
+            K_y = KernelCenterer().fit_transform(K_y)
+
+        # Compute HSIC value
+        self.hsic_value = np.sum(K_x * K_y)
+
+        # Calculate magnitudes
+        self.K_x_norm = np.linalg.norm(K_x)
+        self.K_y_norm = np.linalg.norm(K_y)
+
+        return self
+
+    def compute_kernel(self, X, Y=None, kernel=&#34;rbf&#34;, gamma=None, params=None):
+        # check if kernel is callable
+        if callable(kernel) and params == None:
+            params = {}
+        else:
+            # estimate the gamma parameter
+            if gamma is None:
+                gamma = estimate_gamma(X)
+
+            # set parameters for pairwise kernel
+            params = {&#34;gamma&#34;: gamma, &#34;degree&#34;: self.degree, &#34;coef0&#34;: self.coef0}
+        return pairwise_kernels(X, Y, metric=kernel, filter_params=True, **params)
+
+    @property
+    def _pairwise(self):
+        return self.kernel == &#34;precomputed&#34;
+
+    def score(self, X, y=None, normalize=False):
+        &#34;&#34;&#34;This is not needed. It&#39;s only needed to comply with sklearn API.
+        
+        We will use the target kernel alignment algorithm as a score
+        function. This can be used to find the best parameters.&#34;&#34;&#34;
+
+        if normalize == True:
+
+            return self.hsic_value / self.K_x_norm / self.K_y_norm
+
+        elif normalize == False:
+
+            if self.bias:
+                self.hsic_bias = 1 / (self.n_samples ** 2)
+            else:
+                self.hsic_bias = 1 / (self.n_samples - 1) ** 2
+
+            return self.hsic_bias * self.hsic_value
+        else:
+            raise ValueError(f&#34;Unrecognized normalize argument: {normalize}&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>sklearn.base.BaseEstimator</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.dependence.HSIC.compute_kernel"><code class="name flex">
+<span>def <span class="ident">compute_kernel</span></span>(<span>self, X, Y=None, kernel='rbf', gamma=None, params=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_kernel(self, X, Y=None, kernel=&#34;rbf&#34;, gamma=None, params=None):
+    # check if kernel is callable
+    if callable(kernel) and params == None:
+        params = {}
+    else:
+        # estimate the gamma parameter
+        if gamma is None:
+            gamma = estimate_gamma(X)
+
+        # set parameters for pairwise kernel
+        params = {&#34;gamma&#34;: gamma, &#34;degree&#34;: self.degree, &#34;coef0&#34;: self.coef0}
+    return pairwise_kernels(X, Y, metric=kernel, filter_params=True, **params)</code></pre>
+</details>
+</dd>
+<dt id="src.models.dependence.HSIC.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, X, Y)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, X, Y):
+
+    # Check sizes of X, Y
+    X = check_array(X, ensure_2d=True)
+    Y = check_array(Y, ensure_2d=True)
+
+    # Check samples are the same
+    assert (
+        X.shape[0] == Y.shape[0]
+    ), f&#34;Samples of X ({X.shape[0]}) and Samples of Y ({Y.shape[0]}) are not the same&#34;
+
+    self.n_samples = X.shape[0]
+    self.dx_dimensions = X.shape[1]
+    self.dy_dimensions = Y.shape[1]
+
+    # subsample data if necessary
+    if self.subsample is not None:
+        X = self.rng.permutation(X)[: self.subsample, :]
+        Y = self.rng.permutation(Y)[: self.subsample, :]
+
+    self.X_train_ = X
+    self.Y_train_ = Y
+
+    # Calculate the kernel matrices
+    K_x = self.compute_kernel(
+        X, kernel=self.kernel_X, gamma=self.gamma_X, params=self.kernel_params_X
+    )
+    K_y = self.compute_kernel(
+        Y, kernel=self.kernel_Y, gamma=self.gamma_Y, params=self.kernel_params_Y
+    )
+
+    # Center Kernel
+    # H = np.eye(n_samples) - (1 / n_samples) * np.ones(n_samples)
+    # K_xc = K_x @ H
+    if self.center == True:
+        K_x = KernelCenterer().fit_transform(K_x)
+        K_y = KernelCenterer().fit_transform(K_y)
+
+    # Compute HSIC value
+    self.hsic_value = np.sum(K_x * K_y)
+
+    # Calculate magnitudes
+    self.K_x_norm = np.linalg.norm(K_x)
+    self.K_y_norm = np.linalg.norm(K_y)
+
+    return self</code></pre>
+</details>
+</dd>
+<dt id="src.models.dependence.HSIC.score"><code class="name flex">
+<span>def <span class="ident">score</span></span>(<span>self, X, y=None, normalize=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This is not needed. It's only needed to comply with sklearn API.</p>
+<p>We will use the target kernel alignment algorithm as a score
+function. This can be used to find the best parameters.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def score(self, X, y=None, normalize=False):
+    &#34;&#34;&#34;This is not needed. It&#39;s only needed to comply with sklearn API.
+    
+    We will use the target kernel alignment algorithm as a score
+    function. This can be used to find the best parameters.&#34;&#34;&#34;
+
+    if normalize == True:
+
+        return self.hsic_value / self.K_x_norm / self.K_y_norm
+
+    elif normalize == False:
+
+        if self.bias:
+            self.hsic_bias = 1 / (self.n_samples ** 2)
+        else:
+            self.hsic_bias = 1 / (self.n_samples - 1) ** 2
+
+        return self.hsic_bias * self.hsic_value
+    else:
+        raise ValueError(f&#34;Unrecognized normalize argument: {normalize}&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.dependence.HSICModel"><code class="flex name class">
+<span>class <span class="ident">HSICModel</span></span>
+<span>(</span><span>kernel_X: str = 'rbf', kernel_Y: Union[str, NoneType] = 'rbf', bias: bool = True, gamma_X: Union[float, NoneType] = None, gamma_Y: Union[float, NoneType] = None, subsample: Union[int, NoneType] = None, kernel_kwargs_X: Union[Dict, NoneType] = None, kernel_kwargs_Y: Union[Dict, NoneType] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>HSICModel as a form of a dataclass with a score method.</p>
+<p>This initializes the parameters and then fits to some input
+data and gives out a score.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>kernel</code></strong> :&ensp;<code>str</code>, default=<code>'rbf'</code></dt>
+<dd>the kernel function</dd>
+<dt><strong><code>bias</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>option for the bias term (only affects the HSIC method)</dd>
+<dt><strong><code>gamma_X</code></strong> :&ensp;<code>float, (optional</code>, default=<code>None)</code></dt>
+<dd>gamma parameter for the kernel matrix of X</dd>
+<dt><strong><code>gamma_Y</code></strong> :&ensp;<code>float, (optional</code>, default=<code>None)</code></dt>
+<dd>gamma parameter for the kernel matrix of Y</dd>
+<dt><strong><code>subsample</code></strong> :&ensp;<code>int, (optional</code>, default=<code>None)</code></dt>
+<dd>option to subsample the X, Y</dd>
+</dl>
+<h2 id="example">Example</h2>
+<blockquote>
+<blockquote>
+<p>from src.models.dependence import HSICModel
+from sklearn import datasets
+X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
+Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
+hsic_model = HSICModel()
+hsic_model.gamma_X = 100
+hsic_model.gamma_Y = 0.01
+hsic_score = hsic_model.score(X, Y, 'hsic')
+print(hsic_score)
+0.00042726396990996684</p>
+</blockquote>
+</blockquote></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HSICModel:
+    &#34;&#34;&#34;HSICModel as a form of a dataclass with a score method.
+    
+    This initializes the parameters and then fits to some input
+    data and gives out a score.
+    
+    
+    Parameters
+    ----------
+    kernel : str, default=&#39;rbf&#39;
+        the kernel function 
+
+    bias : bool, default=True
+        option for the bias term (only affects the HSIC method)
+
+    gamma_X : float, (optional, default=None)
+        gamma parameter for the kernel matrix of X
+
+    gamma_Y : float, (optional, default=None)
+        gamma parameter for the kernel matrix of Y
+
+    subsample : int, (optional, default=None)
+        option to subsample the X, Y
+    
+    Example
+    --------
+    &gt;&gt; from src.models.dependence import HSICModel
+    &gt;&gt; from sklearn import datasets
+    &gt;&gt; X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
+    &gt;&gt; Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
+    &gt;&gt; hsic_model = HSICModel()
+    &gt;&gt; hsic_model.gamma_X = 100 
+    &gt;&gt; hsic_model.gamma_Y = 0.01
+    &gt;&gt; hsic_score = hsic_model.score(X, Y, &#39;hsic&#39;)
+    &gt;&gt; print(hsic_score)
+    0.00042726396990996684
+    &#34;&#34;&#34;
+
+    kernel_X: str = &#34;rbf&#34;
+    kernel_Y: Optional[str] = &#34;rbf&#34;
+    bias: bool = True
+    gamma_X: Optional[float] = None
+    gamma_Y: Optional[float] = None
+    subsample: Optional[int] = None
+    kernel_kwargs_X: Optional[Dict] = None
+    kernel_kwargs_Y: Optional[Dict] = None
+
+    def get_score(
+        self, X: np.ndarray, Y: np.ndarray, method: str = &#34;hsic&#34;, **kwargs
+    ) -&gt; float:
+        &#34;&#34;&#34;method to get the HSIC score
+        
+        Parameters
+        ----------
+        X : np.ndarray, (n_samples, n_features)
+        
+        Y : np.ndarray, (n_samples, n_features)
+        
+        method : str, default = &#39;hsic&#39;
+            {&#39;hsic&#39;, &#39;ka&#39;, &#39;cka&#39;}
+        
+        kwargs : dict, (optional)
+        
+        Returns
+        -------
+        score : float
+            the score based on the hsic method proposed above
+        &#34;&#34;&#34;
+        if method == &#34;hsic&#34;:
+            # change params for HSIC
+            self.normalize = False
+            self.center = True
+        elif method == &#34;ka&#34;:
+            # change params for Kernel Alignment
+            self.normalize = True
+            self.center = False
+        elif method == &#34;cka&#34;:
+            # change params for centered Kernel Alignment
+            self.normalize = True
+            self.center = True
+        else:
+            raise ValueError(f&#34;Unrecognized hsic method: {method}&#34;)
+
+        # initialize HSIC model
+        clf_hsic = HSIC(
+            kernel_X=self.kernel_X,
+            kernel_Y=self.kernel_Y,
+            center=self.center,
+            subsample=self.subsample,
+            bias=self.bias,
+            gamma_X=self.gamma_X,
+            gamma_Y=self.gamma_Y,
+            kernel_params_X=self.kernel_kwargs_X,
+            kernel_params_Y=self.kernel_kwargs_Y,
+            **kwargs,
+        )
+
+        # calculate HSIC return scorer
+        clf_hsic.fit(X, Y)
+
+        # return score
+        return clf_hsic.score(X, normalize=self.normalize)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="src.models.dependence.HSICModel.bias"><code class="name">var <span class="ident">bias</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.models.dependence.HSICModel.gamma_X"><code class="name">var <span class="ident">gamma_X</span> : Union[float, NoneType]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.models.dependence.HSICModel.gamma_Y"><code class="name">var <span class="ident">gamma_Y</span> : Union[float, NoneType]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.models.dependence.HSICModel.kernel_X"><code class="name">var <span class="ident">kernel_X</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.models.dependence.HSICModel.kernel_Y"><code class="name">var <span class="ident">kernel_Y</span> : Union[str, NoneType]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.models.dependence.HSICModel.kernel_kwargs_X"><code class="name">var <span class="ident">kernel_kwargs_X</span> : Union[Dict, NoneType]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.models.dependence.HSICModel.kernel_kwargs_Y"><code class="name">var <span class="ident">kernel_kwargs_Y</span> : Union[Dict, NoneType]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.models.dependence.HSICModel.subsample"><code class="name">var <span class="ident">subsample</span> : Union[int, NoneType]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.dependence.HSICModel.get_score"><code class="name flex">
+<span>def <span class="ident">get_score</span></span>(<span>self, X: numpy.ndarray, Y: numpy.ndarray, method: str = 'hsic', **kwargs) -> float</span>
+</code></dt>
+<dd>
+<div class="desc"><p>method to get the HSIC score</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>np.ndarray, (n_samples, n_features)</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>Y</code></strong> :&ensp;<code>np.ndarray, (n_samples, n_features)</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>method</code></strong> :&ensp;<code>str</code>, default <code>= 'hsic'</code></dt>
+<dd>{'hsic', 'ka', 'cka'}</dd>
+<dt><strong><code>kwargs</code></strong> :&ensp;<code>dict, (optional)</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>score</code></strong> :&ensp;<code>float</code></dt>
+<dd>the score based on the hsic method proposed above</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_score(
+    self, X: np.ndarray, Y: np.ndarray, method: str = &#34;hsic&#34;, **kwargs
+) -&gt; float:
+    &#34;&#34;&#34;method to get the HSIC score
+    
+    Parameters
+    ----------
+    X : np.ndarray, (n_samples, n_features)
+    
+    Y : np.ndarray, (n_samples, n_features)
+    
+    method : str, default = &#39;hsic&#39;
+        {&#39;hsic&#39;, &#39;ka&#39;, &#39;cka&#39;}
+    
+    kwargs : dict, (optional)
+    
+    Returns
+    -------
+    score : float
+        the score based on the hsic method proposed above
+    &#34;&#34;&#34;
+    if method == &#34;hsic&#34;:
+        # change params for HSIC
+        self.normalize = False
+        self.center = True
+    elif method == &#34;ka&#34;:
+        # change params for Kernel Alignment
+        self.normalize = True
+        self.center = False
+    elif method == &#34;cka&#34;:
+        # change params for centered Kernel Alignment
+        self.normalize = True
+        self.center = True
+    else:
+        raise ValueError(f&#34;Unrecognized hsic method: {method}&#34;)
+
+    # initialize HSIC model
+    clf_hsic = HSIC(
+        kernel_X=self.kernel_X,
+        kernel_Y=self.kernel_Y,
+        center=self.center,
+        subsample=self.subsample,
+        bias=self.bias,
+        gamma_X=self.gamma_X,
+        gamma_Y=self.gamma_Y,
+        kernel_params_X=self.kernel_kwargs_X,
+        kernel_params_Y=self.kernel_kwargs_Y,
+        **kwargs,
+    )
+
+    # calculate HSIC return scorer
+    clf_hsic.fit(X, Y)
+
+    # return score
+    return clf_hsic.score(X, normalize=self.normalize)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.dependence.RandomizedHSIC"><code class="flex name class">
+<span>class <span class="ident">RandomizedHSIC</span></span>
+<span>(</span><span>n_components: int = 100, gamma_X: NoneType = None, gamma_Y: NoneType = None, kernel: Union[Callable, str] = 'linear', degree: float = 3, coef0: float = 1, kernel_params: Union[dict, NoneType] = None, random_state: Union[int, NoneType] = None, center: Union[int, NoneType] = True, normalized: Union[bool, NoneType] = True, subsample: Union[int, NoneType] = None, bias: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Hilbert-Schmidt Independence Criterion (HSIC). This is
+a method for measuring independence between two variables. This method
+uses the Nystrom method as an approximation to the large kernel matrix.
+Typically this works really well as it is data-dependent; thus it will
+converge to the real kernel matrix as the number of components increases.</p>
+<p>Methods in the Literature</p>
+<ul>
+<li>HSIC - centered, unnormalized</li>
+<li>KA - uncentered, normalized</li>
+<li>CKA - centered, normalized</li>
+</ul>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>The option to center the kernel matrices after construction</dd>
+<dt><strong><code>bias</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>To add the bias for the scaling. Only necessary if calculating HSIC alone.</dd>
+<dt><strong><code>subsample</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
+<dd>The option to subsample the data.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>int</code>, default=<code>123</code></dt>
+<dd>The random state for the subsample.</dd>
+<dt><strong><code>kernel</code></strong> :&ensp;<code>string</code> or <code>callable</code>, default=<code>"linear"</code></dt>
+<dd>Kernel mapping used internally. A callable should accept two arguments
+and the keyword arguments passed to this object as kernel_params, and
+should return a floating point number. Set to "precomputed" in
+order to pass a precomputed kernel matrix to the estimator
+methods instead of samples.</dd>
+<dt><strong><code>gamma_X</code></strong> :&ensp;<code>float</code>, default=<code>None</code></dt>
+<dd>Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+and sigmoid kernels. Used only by the X parameter.
+Interpretation of the default value is left to the kernel;
+see the documentation for sklearn.metrics.pairwise.
+Ignored by other kernels.</dd>
+<dt><strong><code>gamma_Y</code></strong> :&ensp;<code>float</code>, default=<code>None</code></dt>
+<dd>The same gamma parameter as the X. If None, the same gamma_X will be
+used for the Y.</dd>
+<dt><strong><code>degree</code></strong> :&ensp;<code>float</code>, default=<code>3</code></dt>
+<dd>Degree of the polynomial kernel. Ignored by other kernels.</dd>
+<dt><strong><code>coef0</code></strong> :&ensp;<code>float</code>, default=<code>1</code></dt>
+<dd>Zero coefficient for polynomial and sigmoid kernels.
+Ignored by other kernels.</dd>
+<dt><strong><code>kernel_params</code></strong> :&ensp;<code>mapping</code> of <code>string to any</code>, optional</dt>
+<dd>Additional parameters (keyword arguments) for kernel function passed
+as callable object.</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>hsic_value</code></strong> :&ensp;<code>float</code></dt>
+<dd>The HSIC value is scored after fitting.</dd>
+</dl>
+<h2 id="information">Information</h2>
+<p>Author : J. Emmanuel Johnson
+Email
+: jemanjohnson34@gmail.com
+Date
+: 14-Feb-2019</p>
+<h2 id="example">Example</h2>
+<blockquote>
+<blockquote>
+<p>samples, features, components = 100, 50, 10
+X = np.random.randn(samples, features)
+A = np.random.rand(features, features)
+Y = X @ A
+rhsic_clf = RandomizeHSIC(center=True, n_components=components)
+rhsic_clf.fit(X, Y)
+cka_score = rhsic_clf.score(X)
+print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")</p>
+</blockquote>
+</blockquote></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RandomizedHSIC(BaseEstimator):
+    &#34;&#34;&#34;Hilbert-Schmidt Independence Criterion (HSIC). This is
+    a method for measuring independence between two variables. This method
+    uses the Nystrom method as an approximation to the large kernel matrix.
+    Typically this works really well as it is data-dependent; thus it will
+    converge to the real kernel matrix as the number of components increases.
+
+    Methods in the Literature
+
+    * HSIC - centered, unnormalized
+    * KA - uncentered, normalized
+    * CKA - centered, normalized
+    
+    Parameters
+    ----------
+    center : bool, default=True
+        The option to center the kernel matrices after construction
+    
+    bias : bool, default=True
+        To add the bias for the scaling. Only necessary if calculating HSIC alone.
+
+    subsample : int, default=None
+        The option to subsample the data.
+
+    random_state : int, default=123
+        The random state for the subsample.
+
+    kernel : string or callable, default=&#34;linear&#34;
+        Kernel mapping used internally. A callable should accept two arguments
+        and the keyword arguments passed to this object as kernel_params, and
+        should return a floating point number. Set to &#34;precomputed&#34; in
+        order to pass a precomputed kernel matrix to the estimator
+        methods instead of samples.
+    
+    gamma_X : float, default=None
+        Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+        and sigmoid kernels. Used only by the X parameter. 
+        Interpretation of the default value is left to the kernel; 
+        see the documentation for sklearn.metrics.pairwise.
+        Ignored by other kernels.
+    gamma_Y : float, default=None
+        The same gamma parameter as the X. If None, the same gamma_X will be
+        used for the Y.
+    
+    degree : float, default=3
+        Degree of the polynomial kernel. Ignored by other kernels.
+    
+    coef0 : float, default=1
+        Zero coefficient for polynomial and sigmoid kernels.
+        Ignored by other kernels.
+    
+    kernel_params : mapping of string to any, optional
+        Additional parameters (keyword arguments) for kernel function passed
+        as callable object.
+    
+    Attributes
+    ----------
+    hsic_value : float
+        The HSIC value is scored after fitting.
+        
+    Information
+    -----------
+    Author : J. Emmanuel Johnson
+    Email  : jemanjohnson34@gmail.com
+    Date   : 14-Feb-2019
+
+    Example
+    -------
+    &gt;&gt; samples, features, components = 100, 50, 10
+    &gt;&gt; X = np.random.randn(samples, features)
+    &gt;&gt; A = np.random.rand(features, features)
+    &gt;&gt; Y = X @ A
+    &gt;&gt; rhsic_clf = RandomizeHSIC(center=True, n_components=components)
+    &gt;&gt; rhsic_clf.fit(X, Y)
+    &gt;&gt; cka_score = rhsic_clf.score(X)
+    &gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        n_components: int = 100,
+        gamma_X: Optional[None] = None,
+        gamma_Y: Optional[None] = None,
+        kernel: Union[Callable, str] = &#34;linear&#34;,
+        degree: float = 3,
+        coef0: float = 1,
+        kernel_params: Optional[dict] = None,
+        random_state: Optional[int] = None,
+        center: Optional[int] = True,
+        normalized: Optional[bool] = True,
+        subsample: Optional[int] = None,
+        bias: bool = True,
+    ):
+        self.n_components = n_components
+        self.gamma_X = gamma_X
+        self.gamma_Y = gamma_Y
+        self.center = center
+        self.kernel = kernel
+        self.degree = degree
+        self.coef0 = coef0
+        self.kernel_params = kernel_params
+        self.random_state = random_state
+        self.rng = check_random_state(random_state)
+        self.subsample = subsample
+        self.bias = bias
+
+    def fit(self, X, Y):
+
+        # Check sizes of X, Y
+        X = check_array(X, ensure_2d=True)
+        Y = check_array(Y, ensure_2d=True)
+
+        # Check samples are the same
+        assert (
+            X.shape[0] == Y.shape[0]
+        ), f&#34;Samples of X ({X.shape[0]}) and Samples of Y ({Y.shape[0]}) are not the same&#34;
+
+        self.n_samples = X.shape[0]
+        self.dx_dimensions = X.shape[1]
+        self.dy_dimensions = Y.shape[1]
+
+        # subsample data if necessary
+        if self.subsample is not None:
+            X = self.rng.permutation(X)[: self.subsample, :]
+            Y = self.rng.permutation(Y)[: self.subsample, :]
+
+        self.X_train_ = X
+        self.Y_train_ = Y
+
+        # Calculate Kernel Matrices
+        Zx = self.compute_kernel(X, gamma=self.gamma_X)
+        Zy = self.compute_kernel(Y, gamma=self.gamma_Y)
+
+        # Center Kernel
+        # H = np.eye(n_samples) - (1 / n_samples) * np.ones(n_samples)
+        # K_xc = K_x @ H
+        if self.center == True:
+            Zx = Zx - Zx.mean(axis=0)
+            Zy = Zy - Zy.mean(axis=0)
+
+        # Compute HSIC value
+        if self.n_components &lt; self.n_samples:
+            Rxy = Zx.T @ Zy
+            self.hsic_value = np.sum(Rxy * Rxy)
+
+            # Calculate magnitudes
+            self.Zx_norm = np.linalg.norm(Zx.T @ Zx)
+            # print(&#34;Norm (FxF):&#34;, np.linalg.norm(Zx.T @ Zx))
+            # print(&#34;Norm (NxN):&#34;, np.linalg.norm(Zx @ Zx.T))
+            self.Zy_norm = np.linalg.norm(Zy.T @ Zy)
+            # print(&#34;Norm (FxF):&#34;, np.linalg.norm(Zy.T @ Zy))
+            # print(&#34;Norm (NxN):&#34;, np.linalg.norm(Zy @ Zy.T))
+
+        else:
+            Rxx = Zx @ Zx.T
+            Ryy = Zy @ Zy.T
+            self.hsic_value = np.sum(Rxx * Ryy)
+
+            # Calculate magnitudes
+            self.Zx_norm = np.linalg.norm(Zx @ Zx.T)
+            self.Zy_norm = np.linalg.norm(Zy @ Zy.T)
+
+        return self
+
+    def compute_kernel(self, X, Y=None, gamma=None, *args, **kwargs):
+
+        # estimate gamma if None
+        if gamma is None:
+            gamma = estimate_gamma(X)
+
+        # initialize RBF kernel
+        nystrom_kernel = Nystroem(
+            gamma=gamma,
+            kernel=self.kernel,
+            n_components=self.n_components,
+            coef0=self.coef0,
+            degree=self.degree,
+            random_state=self.random_state,
+            *args,
+            **kwargs,
+        )
+
+        # transform data
+        return nystrom_kernel.fit_transform(X)
+
+    def score(self, X, y=None, normalize=False):
+        &#34;&#34;&#34;This is not needed. It&#39;s only needed to comply with sklearn API.
+        
+        We will use the target kernel alignment algorithm as a score
+        function. This can be used to find the best parameters.&#34;&#34;&#34;
+
+        if normalize == True:
+
+            return self.hsic_value / self.Zx_norm / self.Zy_norm
+
+        elif normalize == False:
+
+            if self.bias:
+                self.hsic_bias = 1 / (self.n_samples ** 2)
+            else:
+                self.hsic_bias = 1 / (self.n_samples - 1) ** 2
+
+            return self.hsic_bias * self.hsic_value
+        else:
+            raise ValueError(f&#34;Unrecognized normalize argument: {normalize}&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>sklearn.base.BaseEstimator</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.dependence.RandomizedHSIC.compute_kernel"><code class="name flex">
+<span>def <span class="ident">compute_kernel</span></span>(<span>self, X, Y=None, gamma=None, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_kernel(self, X, Y=None, gamma=None, *args, **kwargs):
+
+    # estimate gamma if None
+    if gamma is None:
+        gamma = estimate_gamma(X)
+
+    # initialize RBF kernel
+    nystrom_kernel = Nystroem(
+        gamma=gamma,
+        kernel=self.kernel,
+        n_components=self.n_components,
+        coef0=self.coef0,
+        degree=self.degree,
+        random_state=self.random_state,
+        *args,
+        **kwargs,
+    )
+
+    # transform data
+    return nystrom_kernel.fit_transform(X)</code></pre>
+</details>
+</dd>
+<dt id="src.models.dependence.RandomizedHSIC.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, X, Y)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, X, Y):
+
+    # Check sizes of X, Y
+    X = check_array(X, ensure_2d=True)
+    Y = check_array(Y, ensure_2d=True)
+
+    # Check samples are the same
+    assert (
+        X.shape[0] == Y.shape[0]
+    ), f&#34;Samples of X ({X.shape[0]}) and Samples of Y ({Y.shape[0]}) are not the same&#34;
+
+    self.n_samples = X.shape[0]
+    self.dx_dimensions = X.shape[1]
+    self.dy_dimensions = Y.shape[1]
+
+    # subsample data if necessary
+    if self.subsample is not None:
+        X = self.rng.permutation(X)[: self.subsample, :]
+        Y = self.rng.permutation(Y)[: self.subsample, :]
+
+    self.X_train_ = X
+    self.Y_train_ = Y
+
+    # Calculate Kernel Matrices
+    Zx = self.compute_kernel(X, gamma=self.gamma_X)
+    Zy = self.compute_kernel(Y, gamma=self.gamma_Y)
+
+    # Center Kernel
+    # H = np.eye(n_samples) - (1 / n_samples) * np.ones(n_samples)
+    # K_xc = K_x @ H
+    if self.center == True:
+        Zx = Zx - Zx.mean(axis=0)
+        Zy = Zy - Zy.mean(axis=0)
+
+    # Compute HSIC value
+    if self.n_components &lt; self.n_samples:
+        Rxy = Zx.T @ Zy
+        self.hsic_value = np.sum(Rxy * Rxy)
+
+        # Calculate magnitudes
+        self.Zx_norm = np.linalg.norm(Zx.T @ Zx)
+        # print(&#34;Norm (FxF):&#34;, np.linalg.norm(Zx.T @ Zx))
+        # print(&#34;Norm (NxN):&#34;, np.linalg.norm(Zx @ Zx.T))
+        self.Zy_norm = np.linalg.norm(Zy.T @ Zy)
+        # print(&#34;Norm (FxF):&#34;, np.linalg.norm(Zy.T @ Zy))
+        # print(&#34;Norm (NxN):&#34;, np.linalg.norm(Zy @ Zy.T))
+
+    else:
+        Rxx = Zx @ Zx.T
+        Ryy = Zy @ Zy.T
+        self.hsic_value = np.sum(Rxx * Ryy)
+
+        # Calculate magnitudes
+        self.Zx_norm = np.linalg.norm(Zx @ Zx.T)
+        self.Zy_norm = np.linalg.norm(Zy @ Zy.T)
+
+    return self</code></pre>
+</details>
+</dd>
+<dt id="src.models.dependence.RandomizedHSIC.score"><code class="name flex">
+<span>def <span class="ident">score</span></span>(<span>self, X, y=None, normalize=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This is not needed. It's only needed to comply with sklearn API.</p>
+<p>We will use the target kernel alignment algorithm as a score
+function. This can be used to find the best parameters.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def score(self, X, y=None, normalize=False):
+    &#34;&#34;&#34;This is not needed. It&#39;s only needed to comply with sklearn API.
+    
+    We will use the target kernel alignment algorithm as a score
+    function. This can be used to find the best parameters.&#34;&#34;&#34;
+
+    if normalize == True:
+
+        return self.hsic_value / self.Zx_norm / self.Zy_norm
+
+    elif normalize == False:
+
+        if self.bias:
+            self.hsic_bias = 1 / (self.n_samples ** 2)
+        else:
+            self.hsic_bias = 1 / (self.n_samples - 1) ** 2
+
+        return self.hsic_bias * self.hsic_value
+    else:
+        raise ValueError(f&#34;Unrecognized normalize argument: {normalize}&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.models" href="index.html">src.models</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.models.dependence.HSIC" href="#src.models.dependence.HSIC">HSIC</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.dependence.HSIC.compute_kernel" href="#src.models.dependence.HSIC.compute_kernel">compute_kernel</a></code></li>
+<li><code><a title="src.models.dependence.HSIC.fit" href="#src.models.dependence.HSIC.fit">fit</a></code></li>
+<li><code><a title="src.models.dependence.HSIC.score" href="#src.models.dependence.HSIC.score">score</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.dependence.HSICModel" href="#src.models.dependence.HSICModel">HSICModel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="src.models.dependence.HSICModel.bias" href="#src.models.dependence.HSICModel.bias">bias</a></code></li>
+<li><code><a title="src.models.dependence.HSICModel.gamma_X" href="#src.models.dependence.HSICModel.gamma_X">gamma_X</a></code></li>
+<li><code><a title="src.models.dependence.HSICModel.gamma_Y" href="#src.models.dependence.HSICModel.gamma_Y">gamma_Y</a></code></li>
+<li><code><a title="src.models.dependence.HSICModel.get_score" href="#src.models.dependence.HSICModel.get_score">get_score</a></code></li>
+<li><code><a title="src.models.dependence.HSICModel.kernel_X" href="#src.models.dependence.HSICModel.kernel_X">kernel_X</a></code></li>
+<li><code><a title="src.models.dependence.HSICModel.kernel_Y" href="#src.models.dependence.HSICModel.kernel_Y">kernel_Y</a></code></li>
+<li><code><a title="src.models.dependence.HSICModel.kernel_kwargs_X" href="#src.models.dependence.HSICModel.kernel_kwargs_X">kernel_kwargs_X</a></code></li>
+<li><code><a title="src.models.dependence.HSICModel.kernel_kwargs_Y" href="#src.models.dependence.HSICModel.kernel_kwargs_Y">kernel_kwargs_Y</a></code></li>
+<li><code><a title="src.models.dependence.HSICModel.subsample" href="#src.models.dependence.HSICModel.subsample">subsample</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.dependence.RandomizedHSIC" href="#src.models.dependence.RandomizedHSIC">RandomizedHSIC</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.dependence.RandomizedHSIC.compute_kernel" href="#src.models.dependence.RandomizedHSIC.compute_kernel">compute_kernel</a></code></li>
+<li><code><a title="src.models.dependence.RandomizedHSIC.fit" href="#src.models.dependence.RandomizedHSIC.fit">fit</a></code></li>
+<li><code><a title="src.models.dependence.RandomizedHSIC.score" href="#src.models.dependence.RandomizedHSIC.score">score</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -1,11 +1,12 @@
+from typing import Optional
+
 import numpy as np
+from scipy import stats
+from scipy.spatial.distance import pdist, squareform
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import NotFittedError
-from sklearn.utils import check_random_state, check_array
 from sklearn.metrics.pairwise import rbf_kernel
-from scipy import stats
-from typing import Optional
-from scipy.spatial.distance import pdist, squareform
+from sklearn.utils import check_array, check_random_state
 
 
 class RandomFourierFeatures(BaseEstimator, TransformerMixin):

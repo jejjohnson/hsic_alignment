@@ -1,9 +1,10 @@
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
+
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-import seaborn as sns
-import pandas as pd
 import numpy as np
+import pandas as pd
+import seaborn as sns
+from matplotlib.ticker import MaxNLocator
 
 plt.style.use(["ggplot", "seaborn-paper"])
 

@@ -1,13 +1,14 @@
+from pathlib import Path
+from typing import Tuple
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 import scipy.io as scio
-import pandas as pd
-from sklearn.utils import check_random_state
-from typing import Tuple
-from scipy.stats import norm, uniform, ortho_group, entropy as sci_entropy
+from scipy.stats import entropy as sci_entropy
+from scipy.stats import norm, ortho_group, uniform
 from sklearn import preprocessing
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_random_state
 
 
 class RBIGData(object):
