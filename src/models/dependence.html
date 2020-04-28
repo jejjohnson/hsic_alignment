@@ -24,16 +24,25 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import sys, os
+<pre><code class="python">import os
+import sys
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Optional, Tuple, Union
+
+# Kernel Dependency measure
+import numpy as np
+from sklearn.base import BaseEstimator
+from sklearn.kernel_approximation import Nystroem, RBFSampler
+from sklearn.metrics.pairwise import linear_kernel, pairwise_kernels
+from sklearn.preprocessing import KernelCenterer
+from sklearn.utils import check_array, check_random_state
+
+from src.models.utils import estimate_gamma
 
 # Insert path to package,.
 pysim_path = f&#34;/home/emmanuel/code/pysim/&#34;
 sys.path.insert(0, pysim_path)
 
-# Kernel Dependency measure
-import numpy as np
-from typing import Optional, Callable, Union, List, Tuple, Dict
-from dataclasses import dataclass
 
 
 @dataclass
@@ -141,16 +150,8 @@ class HSICModel:
         return clf_hsic.score(X, normalize=self.normalize)
 
 
-from typing import Callable, Optional, Union
 
-import numpy as np
-from sklearn.base import BaseEstimator
-from sklearn.kernel_approximation import Nystroem, RBFSampler
-from sklearn.metrics.pairwise import linear_kernel, pairwise_kernels
-from sklearn.preprocessing import KernelCenterer
-from sklearn.utils import check_array, check_random_state
 
-from src.models.utils import estimate_gamma
 
 
 class HSIC(BaseEstimator):

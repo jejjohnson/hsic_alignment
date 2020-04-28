@@ -25,6 +25,11 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import itertools
+from collections import namedtuple
+from typing import List, Optional, Union
+
+import pandas as pd
+from scipy import stats
 
 
 def dict_product(dicts):
@@ -35,7 +40,43 @@ def dict_product(dicts):
      {&#39;character&#39;: &#39;b&#39;, &#39;number&#39;: 1},
      {&#39;character&#39;: &#39;b&#39;, &#39;number&#39;: 2}]
     &#34;&#34;&#34;
-    return (dict(zip(dicts.keys(), x)) for x in itertools.product(*dicts.values()))</code></pre>
+    return (dict(zip(dicts.keys(), x)) for x in itertools.product(*dicts.values()))
+
+
+corr_stats = namedtuple(&#34;corr_stats&#34;, [&#34;pearson&#34;, &#34;spearman&#34;])
+
+df_query = namedtuple(&#34;df_query&#34;, [&#34;name&#34;, &#34;elements&#34;])
+
+
+def subset_dataframe(df: pd.DataFrame, queries: List[df_query],) -&gt; pd.DataFrame:
+
+    # copy dataframe to prevent overwriting
+    sub_df = df.copy()
+
+    #
+    for iquery in queries:
+        sub_df = sub_df[sub_df[iquery.name].isin(iquery.elements)]
+
+    return sub_df
+
+
+def get_correlations(df: pd.DataFrame):
+    &#34;&#34;&#34;Inputs a dataframe and outputs the correlation between
+    the mutual information and the score.
+
+    Requires the &#39;mutual_info&#39; and &#39;score&#39; columns.&#34;&#34;&#34;
+
+    # check that columns are in dataframe
+    msg = &#34;No &#39;mutual_info&#39;  and/or &#39;score&#39; column(s) found in dataframe&#34;
+    assert {&#34;mutual_info&#34;, &#34;score&#34;}.issubset(df.columns), msg
+
+    # get pearson correlation
+    corr_pear = stats.pearsonr(df.score, df.mutual_info)[0]
+
+    # get spearman correlation
+    corr_spear = stats.spearmanr(df.score, df.mutual_info)[0]
+
+    return corr_stats(corr_pear, corr_spear)</code></pre>
 </details>
 </section>
 <section>
@@ -70,9 +111,107 @@ def dict_product(dicts):
     return (dict(zip(dicts.keys(), x)) for x in itertools.product(*dicts.values()))</code></pre>
 </details>
 </dd>
+<dt id="src.features.utils.get_correlations"><code class="name flex">
+<span>def <span class="ident">get_correlations</span></span>(<span>df: pandas.core.frame.DataFrame)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Inputs a dataframe and outputs the correlation between
+the mutual information and the score.</p>
+<p>Requires the 'mutual_info' and 'score' columns.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_correlations(df: pd.DataFrame):
+    &#34;&#34;&#34;Inputs a dataframe and outputs the correlation between
+    the mutual information and the score.
+
+    Requires the &#39;mutual_info&#39; and &#39;score&#39; columns.&#34;&#34;&#34;
+
+    # check that columns are in dataframe
+    msg = &#34;No &#39;mutual_info&#39;  and/or &#39;score&#39; column(s) found in dataframe&#34;
+    assert {&#34;mutual_info&#34;, &#34;score&#34;}.issubset(df.columns), msg
+
+    # get pearson correlation
+    corr_pear = stats.pearsonr(df.score, df.mutual_info)[0]
+
+    # get spearman correlation
+    corr_spear = stats.spearmanr(df.score, df.mutual_info)[0]
+
+    return corr_stats(corr_pear, corr_spear)</code></pre>
+</details>
+</dd>
+<dt id="src.features.utils.subset_dataframe"><code class="name flex">
+<span>def <span class="ident">subset_dataframe</span></span>(<span>df: pandas.core.frame.DataFrame, queries: List[<a title="src.features.utils.df_query" href="#src.features.utils.df_query">df_query</a>]) -> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def subset_dataframe(df: pd.DataFrame, queries: List[df_query],) -&gt; pd.DataFrame:
+
+    # copy dataframe to prevent overwriting
+    sub_df = df.copy()
+
+    #
+    for iquery in queries:
+        sub_df = sub_df[sub_df[iquery.name].isin(iquery.elements)]
+
+    return sub_df</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.features.utils.corr_stats"><code class="flex name class">
+<span>class <span class="ident">corr_stats</span></span>
+<span>(</span><span>pearson, spearman)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>corr_stats(pearson, spearman)</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="src.features.utils.corr_stats.pearson"><code class="name">var <span class="ident">pearson</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 0</p></div>
+</dd>
+<dt id="src.features.utils.corr_stats.spearman"><code class="name">var <span class="ident">spearman</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 1</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.features.utils.df_query"><code class="flex name class">
+<span>class <span class="ident">df_query</span></span>
+<span>(</span><span>name, elements)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>df_query(name, elements)</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="src.features.utils.df_query.elements"><code class="name">var <span class="ident">elements</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 1</p></div>
+</dd>
+<dt id="src.features.utils.df_query.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 0</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -89,6 +228,26 @@ def dict_product(dicts):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="src.features.utils.dict_product" href="#src.features.utils.dict_product">dict_product</a></code></li>
+<li><code><a title="src.features.utils.get_correlations" href="#src.features.utils.get_correlations">get_correlations</a></code></li>
+<li><code><a title="src.features.utils.subset_dataframe" href="#src.features.utils.subset_dataframe">subset_dataframe</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.features.utils.corr_stats" href="#src.features.utils.corr_stats">corr_stats</a></code></h4>
+<ul class="">
+<li><code><a title="src.features.utils.corr_stats.pearson" href="#src.features.utils.corr_stats.pearson">pearson</a></code></li>
+<li><code><a title="src.features.utils.corr_stats.spearman" href="#src.features.utils.corr_stats.spearman">spearman</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.features.utils.df_query" href="#src.features.utils.df_query">df_query</a></code></h4>
+<ul class="">
+<li><code><a title="src.features.utils.df_query.elements" href="#src.features.utils.df_query.elements">elements</a></code></li>
+<li><code><a title="src.features.utils.df_query.name" href="#src.features.utils.df_query.name">name</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
