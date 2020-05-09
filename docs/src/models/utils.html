@@ -25,16 +25,16 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import collections
-
-GammaParam = collections.namedtuple(&#34;GammaParam&#34;, [&#34;method&#34;, &#34;percent&#34;, &#34;scale&#34;])
-
-from typing import List, Optional, Union, NamedTuple
+from typing import List, NamedTuple, Optional, Union
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 from sklearn.utils import check_array, check_random_state
-import collections
 from statsmodels.nonparametric import bandwidths
+
+GammaParam = collections.namedtuple(&#34;GammaParam&#34;, [&#34;method&#34;, &#34;percent&#34;, &#34;scale&#34;])
+
+
 
 
 class GammaParam(NamedTuple):

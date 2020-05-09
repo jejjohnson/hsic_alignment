@@ -4,6 +4,9 @@ import random
 import sys
 import warnings
 from typing import Dict, Optional, Tuple
+from pyprojroot import here
+
+sys.path.append(str(here()))
 
 # Plotting Procedures
 import matplotlib
@@ -13,31 +16,31 @@ import pandas as pd
 import seaborn as sns
 from scipy.spatial.distance import pdist, squareform
 from sklearn.gaussian_process.kernels import RBF
+from sklearn.metrics.pairwise import linear_kernel
+
 # Kernel Dependency measure
 from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
 # toy datasets
-from data.distribution import DataParams, Inputs
+from src.data.distribution import DataParams, Inputs
+
 # experiment helpers
-from experiments.utils import dict_product, run_parallel_step
-from models.dependence import HSICModel
-# Plotting
-from visualization.distribution import plot_scorer
+from src.experiments.utils import dict_product, run_parallel_step
+from src.models.dependence import HSICModel, sigma_estimate
 
-# Insert path to model directory...
-cwd = os.getcwd()
-project_path = f"/home/emmanuel/projects/2019_hsic_align/src"
-sys.path.insert(0, project_path)
 
-# Insert path to package,.
-pysim_path = f"/home/emmanuel/code/pysim/"
-sys.path.insert(0, pysim_path)
+# # Insert path to model directory...
+# cwd = os.getcwd()
+# project_path = f"/home/emmanuel/projects/2019_hsic_align/src"
+# sys.path.insert(0, project_path)
 
+# # Insert path to package,.
+# pysim_path = f"/home/emmanuel/code/pysim/"
+# sys.path.insert(0, pysim_path)
 
 
 random.seed(123)
-
 
 
 # from pysim.kernel.utils import estimate_sigma
@@ -45,8 +48,6 @@ random.seed(123)
 
 # RBIG IT measures
 # from models.ite_algorithms import run_rbig_models
-
-
 
 
 RES_PATH = (
@@ -106,97 +107,6 @@ def get_parameters(
     return params, loop_params
 
 
-
-
-def scotts_factor(X: np.ndarray) -> float:
-    """Scotts Method to estimate the length scale of the 
-    rbf kernel.
-    
-        factor = n**(-1./(d+4))
-    
-    Parameters
-    ----------
-    X : np.ndarry
-        Input array
-    
-    Returns
-    -------
-    factor : float
-        the length scale estimated
-    
-    """
-    n_samples, n_features = X.shape
-
-    return np.power(n_samples, -1 / (n_features + 4.0))
-
-
-def silvermans_factor(X: np.ndarray) -> float:
-    """Silvermans method used to estimate the length scale
-    of the rbf kernel.
-    
-    factor = (n * (d + 2) / 4.)**(-1. / (d + 4)).
-    
-    Parameters
-    ----------
-    X : np.ndarray,
-        Input array
-    
-    Returns
-    -------
-    factor : float
-        the length scale estimated
-    """
-    n_samples, n_features = X.shape
-
-    base = (n_samples * (n_features + 2.0)) / 4.0
-
-    return np.power(base, -1 / (n_features + 4.0))
-
-
-def kth_distance(dists: np.ndarray, percent: float) -> np.ndarray:
-
-    if isinstance(percent, float):
-        percent /= 100
-
-    # kth distance calculation (50%)
-    kth_sample = int(percent * dists.shape[0])
-
-    # take the Kth neighbours of that distance
-    k_dist = dists[:, kth_sample]
-
-    return k_dist
-
-
-def sigma_estimate(
-    X: np.ndarray,
-    method: str = "median",
-    percent: Optional[int] = None,
-    heuristic: bool = False,
-) -> float:
-
-    # get the squared euclidean distances
-    if method == "silverman":
-        return silvermans_factor(X)
-    elif method == "scott":
-        return scotts_factor(X)
-    elif percent is not None:
-        kth_sample = int((percent / 100) * X.shape[0])
-        dists = np.sort(squareform(pdist(X, "sqeuclidean")))[:, kth_sample]
-    else:
-        dists = np.sort(pdist(X, "sqeuclidean"))
-
-    if method == "median":
-        sigma = np.median(dists)
-    elif method == "mean":
-        sigma = np.mean(dists)
-    else:
-        raise ValueError(f"Unrecognized distance measure: {method}")
-
-    if heuristic:
-        sigma = np.sqrt(sigma / 2)
-    return sigma
-
-
 def step(
     params: Dict, loop_param: Dict,
 ):
@@ -253,6 +163,22 @@ def step(
 
     score = hsic_clf.get_score(inputs.X, inputs.Y, params["scorer"])
 
+    # ========================
+    # Estimate Linear HSIC
+    # ========================
+    hsic_clf = HSICModel(kernel_X="linear", kernel_Y="linear",)
+
+    score_linear = hsic_clf.get_score(inputs.X, inputs.Y, params["scorer"])
+
+    # ========================
+    # Estimate Covariances
+    # ========================
+    score_cov = (
+        (np.linalg.norm(inputs.X.T @ inputs.Y) ** 2)
+        / np.linalg.norm(inputs.X.T @ inputs.X)
+        / np.linalg.norm(inputs.Y.T @ inputs.Y)
+    )
+
     # ====================
     # Results
     # ====================
@@ -280,6 +206,8 @@ def step(
             # HSIC Params
             "scorer": [params["scorer"]],
             "score": [score],
+            "score_lin": [score_linear],
+            "score_cov": [score_cov],
             "mutual_info": [inputs.mutual_info],
         }
     )
@@ -294,10 +222,19 @@ def main(args):
     )
 
     if args.smoke_test:
+        header = True
+        mode = "w"
         iparams = params[0]
         iloop_param = loop_params[0]
-        _ = step(iparams, iloop_param)
+        results_df = step(iparams, iloop_param)
 
+        # save results
+        with open(f"{RES_PATH}{args.save}_{args.dataset}.csv", mode) as f:
+            results_df.to_csv(f, header=header)
+
+        header = False
+        mode = "a"
+        del results_df
     # initialize datast
     else:
         header = True
@@ -335,7 +272,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="gauss", help="The dataset")
 
     parser.add_argument(
-        "--save", type=str, default="dist_exp_v1", help="Save name for final data"
+        "--save", type=str, default="dist_exp_v0", help="Save name for final data"
     )
 
     parser.add_argument(

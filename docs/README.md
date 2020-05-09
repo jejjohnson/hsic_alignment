@@ -137,6 +137,7 @@ $$
 | Parameter Estimator | Mean, Median, Silverman, etc |
 | Center Kernel       | Yes / No                     |
 | Normalized Score    | Yes / No                     |
+| Kernel              | RBF / ARD                    |
 
 </center>
 
@@ -156,9 +157,11 @@ This is the walk-through where I go step by step and show how I implemented ever
   > I show how we can estimate HSIC using some of the main methods in the literature.
 * 3.0 - [Multivariate Distribution](notebooks/code_reviews/3.0_multivariate_dists)
   > I show how we can apply this to large multivariate data and create a large scale parameter search
-* 3.1 - [Best Parameters](notebooks/code_reviews/3.0_multivariate_dists)
-  > This is part II where I show some preliminary results for which methods are better.
-* 5.0 - [Fitting Mutual Information](notebooks/code_reviews/4.0_best_params)
+* 4.1 - [Best Parameters](notebooks/code_reviews/4.1_params_gauss)
+  > This is part II where I show some preliminary results for which methods are better for the **Gaussian** distribution.
+* 4.2 - [Best Parameters](notebooks/code_reviews/4.2_params_tstudent)
+  > This is part II where I show some preliminary results for which methods are better for the **T-Student** distribution.
+* 5.0 - [Fitting Mutual Information](notebooks/code_reviews/5.0_fitting_mi)
   > I show how the centered kernel alignment best approximates the Gaussian distribution.
 
 
@@ -179,7 +182,6 @@ This is the walk-through where I go step by step and show how I implemented ever
 
 !!! details "Demo Notebook"
     * [Fitting Mutual Information](notebooks/code_reviews/5.0_fitting_mi.ipynb)
-    
 
 ---
 
@@ -194,6 +196,5 @@ The median distance seems to be fairly robust in settings with different samples
 ---
 
 ### Take-Home Message II
-
 
 It appears that the centered kernel alignment (CKA) method is the most consistent when we compare the score versus the mutual information of known distributions. HSIC has some consistency but not entirely. The KA algorithm has no consistency whatsoever; avoid using this method for unsupervised problems.

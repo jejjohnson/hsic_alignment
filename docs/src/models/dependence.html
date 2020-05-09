@@ -24,16 +24,24 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import sys, os
+<pre><code class="python">import os
+import sys
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Optional, Tuple, Union
+
+# Kernel Dependency measure
+import numpy as np
+from sklearn.base import BaseEstimator
+from sklearn.kernel_approximation import Nystroem, RBFSampler
+from sklearn.metrics.pairwise import linear_kernel, pairwise_kernels
+from sklearn.preprocessing import KernelCenterer
+from sklearn.utils import check_array, check_random_state
+
+from src.models.utils import estimate_gamma
 
 # Insert path to package,.
 pysim_path = f&#34;/home/emmanuel/code/pysim/&#34;
 sys.path.insert(0, pysim_path)
-
-# Kernel Dependency measure
-import numpy as np
-from typing import Optional, Callable, Union, List, Tuple, Dict
-from dataclasses import dataclass
 
 
 @dataclass
@@ -63,15 +71,15 @@ class HSICModel:
     
     Example
     --------
-    &gt;&gt; from src.models.dependence import HSICModel
-    &gt;&gt; from sklearn import datasets
-    &gt;&gt; X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
-    &gt;&gt; Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
-    &gt;&gt; hsic_model = HSICModel()
-    &gt;&gt; hsic_model.gamma_X = 100 
-    &gt;&gt; hsic_model.gamma_Y = 0.01
-    &gt;&gt; hsic_score = hsic_model.score(X, Y, &#39;hsic&#39;)
-    &gt;&gt; print(hsic_score)
+    &gt;&gt;&gt; from src.models.dependence import HSICModel
+    &gt;&gt;&gt; from sklearn import datasets
+    &gt;&gt;&gt; X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
+    &gt;&gt;&gt; Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
+    &gt;&gt;&gt; hsic_model = HSICModel()
+    &gt;&gt;&gt; hsic_model.gamma_X = 100 
+    &gt;&gt;&gt; hsic_model.gamma_Y = 0.01
+    &gt;&gt;&gt; hsic_score = hsic_model.score(X, Y, &#39;hsic&#39;)
+    &gt;&gt;&gt; print(hsic_score)
     0.00042726396990996684
     &#34;&#34;&#34;
 
@@ -141,18 +149,6 @@ class HSICModel:
         return clf_hsic.score(X, normalize=self.normalize)
 
 
-from typing import Callable, Optional, Union
-
-import numpy as np
-from sklearn.base import BaseEstimator
-from sklearn.kernel_approximation import Nystroem, RBFSampler
-from sklearn.metrics.pairwise import linear_kernel, pairwise_kernels
-from sklearn.preprocessing import KernelCenterer
-from sklearn.utils import check_array, check_random_state
-
-from src.models.utils import estimate_gamma
-
-
 class HSIC(BaseEstimator):
     &#34;&#34;&#34;Hilbert-Schmidt Independence Criterion (HSIC). This is
     a method for measuring independence between two variables.
@@ -219,14 +215,14 @@ class HSIC(BaseEstimator):
 
     Example
     -------
-    &gt;&gt; samples, features = 100, 50
-    &gt;&gt; X = np.random.randn(samples, features)
-    &gt;&gt; A = np.random.rand(features, features)
-    &gt;&gt; Y = X @ A
-    &gt;&gt; hsic_clf = HSIC(center=True, kernel=&#39;linear&#39;)
-    &gt;&gt; hsic_clf.fit(X, Y)
-    &gt;&gt; cka_score = hsic_clf.score(X)
-    &gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
+    &gt;&gt;&gt; samples, features = 100, 50
+    &gt;&gt;&gt; X = np.random.randn(samples, features)
+    &gt;&gt;&gt; A = np.random.rand(features, features)
+    &gt;&gt;&gt; Y = X @ A
+    &gt;&gt;&gt; hsic_clf = HSIC(center=True, kernel=&#39;linear&#39;)
+    &gt;&gt;&gt; hsic_clf.fit(X, Y)
+    &gt;&gt;&gt; cka_score = hsic_clf.score(X)
+    &gt;&gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
     &#34;&#34;&#34;
 
     def __init__(
@@ -412,14 +408,14 @@ class RandomizedHSIC(BaseEstimator):
 
     Example
     -------
-    &gt;&gt; samples, features, components = 100, 50, 10
-    &gt;&gt; X = np.random.randn(samples, features)
-    &gt;&gt; A = np.random.rand(features, features)
-    &gt;&gt; Y = X @ A
-    &gt;&gt; rhsic_clf = RandomizeHSIC(center=True, n_components=components)
-    &gt;&gt; rhsic_clf.fit(X, Y)
-    &gt;&gt; cka_score = rhsic_clf.score(X)
-    &gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
+    &gt;&gt;&gt; samples, features, components = 100, 50, 10
+    &gt;&gt;&gt; X = np.random.randn(samples, features)
+    &gt;&gt;&gt; A = np.random.rand(features, features)
+    &gt;&gt;&gt; Y = X @ A
+    &gt;&gt;&gt; rhsic_clf = RandomizeHSIC(center=True, n_components=components)
+    &gt;&gt;&gt; rhsic_clf.fit(X, Y)
+    &gt;&gt;&gt; cka_score = rhsic_clf.score(X)
+    &gt;&gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
     &#34;&#34;&#34;
 
     def __init__(
@@ -618,18 +614,15 @@ Email
 Date
 : 14-Feb-2019</p>
 <h2 id="example">Example</h2>
-<blockquote>
-<blockquote>
-<p>samples, features = 100, 50
-X = np.random.randn(samples, features)
-A = np.random.rand(features, features)
-Y = X @ A
-hsic_clf = HSIC(center=True, kernel='linear')
-hsic_clf.fit(X, Y)
-cka_score = hsic_clf.score(X)
-print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")</p>
-</blockquote>
-</blockquote></div>
+<pre><code class="python">&gt;&gt;&gt; samples, features = 100, 50
+&gt;&gt;&gt; X = np.random.randn(samples, features)
+&gt;&gt;&gt; A = np.random.rand(features, features)
+&gt;&gt;&gt; Y = X @ A
+&gt;&gt;&gt; hsic_clf = HSIC(center=True, kernel='linear')
+&gt;&gt;&gt; hsic_clf.fit(X, Y)
+&gt;&gt;&gt; cka_score = hsic_clf.score(X)
+&gt;&gt;&gt; print(f&quot;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&quot;)
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -700,14 +693,14 @@ print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")</p>
 
     Example
     -------
-    &gt;&gt; samples, features = 100, 50
-    &gt;&gt; X = np.random.randn(samples, features)
-    &gt;&gt; A = np.random.rand(features, features)
-    &gt;&gt; Y = X @ A
-    &gt;&gt; hsic_clf = HSIC(center=True, kernel=&#39;linear&#39;)
-    &gt;&gt; hsic_clf.fit(X, Y)
-    &gt;&gt; cka_score = hsic_clf.score(X)
-    &gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
+    &gt;&gt;&gt; samples, features = 100, 50
+    &gt;&gt;&gt; X = np.random.randn(samples, features)
+    &gt;&gt;&gt; A = np.random.rand(features, features)
+    &gt;&gt;&gt; Y = X @ A
+    &gt;&gt;&gt; hsic_clf = HSIC(center=True, kernel=&#39;linear&#39;)
+    &gt;&gt;&gt; hsic_clf.fit(X, Y)
+    &gt;&gt;&gt; cka_score = hsic_clf.score(X)
+    &gt;&gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
     &#34;&#34;&#34;
 
     def __init__(
@@ -967,20 +960,17 @@ data and gives out a score.</p>
 <dd>option to subsample the X, Y</dd>
 </dl>
 <h2 id="example">Example</h2>
-<blockquote>
-<blockquote>
-<p>from src.models.dependence import HSICModel
-from sklearn import datasets
-X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
-Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
-hsic_model = HSICModel()
-hsic_model.gamma_X = 100
-hsic_model.gamma_Y = 0.01
-hsic_score = hsic_model.score(X, Y, 'hsic')
-print(hsic_score)
-0.00042726396990996684</p>
-</blockquote>
-</blockquote></div>
+<pre><code class="python">&gt;&gt;&gt; from src.models.dependence import HSICModel
+&gt;&gt;&gt; from sklearn import datasets
+&gt;&gt;&gt; X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
+&gt;&gt;&gt; Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
+&gt;&gt;&gt; hsic_model = HSICModel()
+&gt;&gt;&gt; hsic_model.gamma_X = 100 
+&gt;&gt;&gt; hsic_model.gamma_Y = 0.01
+&gt;&gt;&gt; hsic_score = hsic_model.score(X, Y, 'hsic')
+&gt;&gt;&gt; print(hsic_score)
+0.00042726396990996684
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1011,15 +1001,15 @@ print(hsic_score)
     
     Example
     --------
-    &gt;&gt; from src.models.dependence import HSICModel
-    &gt;&gt; from sklearn import datasets
-    &gt;&gt; X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
-    &gt;&gt; Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
-    &gt;&gt; hsic_model = HSICModel()
-    &gt;&gt; hsic_model.gamma_X = 100 
-    &gt;&gt; hsic_model.gamma_Y = 0.01
-    &gt;&gt; hsic_score = hsic_model.score(X, Y, &#39;hsic&#39;)
-    &gt;&gt; print(hsic_score)
+    &gt;&gt;&gt; from src.models.dependence import HSICModel
+    &gt;&gt;&gt; from sklearn import datasets
+    &gt;&gt;&gt; X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
+    &gt;&gt;&gt; Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
+    &gt;&gt;&gt; hsic_model = HSICModel()
+    &gt;&gt;&gt; hsic_model.gamma_X = 100 
+    &gt;&gt;&gt; hsic_model.gamma_Y = 0.01
+    &gt;&gt;&gt; hsic_score = hsic_model.score(X, Y, &#39;hsic&#39;)
+    &gt;&gt;&gt; print(hsic_score)
     0.00042726396990996684
     &#34;&#34;&#34;
 
@@ -1271,18 +1261,15 @@ Email
 Date
 : 14-Feb-2019</p>
 <h2 id="example">Example</h2>
-<blockquote>
-<blockquote>
-<p>samples, features, components = 100, 50, 10
-X = np.random.randn(samples, features)
-A = np.random.rand(features, features)
-Y = X @ A
-rhsic_clf = RandomizeHSIC(center=True, n_components=components)
-rhsic_clf.fit(X, Y)
-cka_score = rhsic_clf.score(X)
-print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")</p>
-</blockquote>
-</blockquote></div>
+<pre><code class="python">&gt;&gt;&gt; samples, features, components = 100, 50, 10
+&gt;&gt;&gt; X = np.random.randn(samples, features)
+&gt;&gt;&gt; A = np.random.rand(features, features)
+&gt;&gt;&gt; Y = X @ A
+&gt;&gt;&gt; rhsic_clf = RandomizeHSIC(center=True, n_components=components)
+&gt;&gt;&gt; rhsic_clf.fit(X, Y)
+&gt;&gt;&gt; cka_score = rhsic_clf.score(X)
+&gt;&gt;&gt; print(f&quot;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&quot;)
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1355,14 +1342,14 @@ print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")</p>
 
     Example
     -------
-    &gt;&gt; samples, features, components = 100, 50, 10
-    &gt;&gt; X = np.random.randn(samples, features)
-    &gt;&gt; A = np.random.rand(features, features)
-    &gt;&gt; Y = X @ A
-    &gt;&gt; rhsic_clf = RandomizeHSIC(center=True, n_components=components)
-    &gt;&gt; rhsic_clf.fit(X, Y)
-    &gt;&gt; cka_score = rhsic_clf.score(X)
-    &gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
+    &gt;&gt;&gt; samples, features, components = 100, 50, 10
+    &gt;&gt;&gt; X = np.random.randn(samples, features)
+    &gt;&gt;&gt; A = np.random.rand(features, features)
+    &gt;&gt;&gt; Y = X @ A
+    &gt;&gt;&gt; rhsic_clf = RandomizeHSIC(center=True, n_components=components)
+    &gt;&gt;&gt; rhsic_clf.fit(X, Y)
+    &gt;&gt;&gt; cka_score = rhsic_clf.score(X)
+    &gt;&gt;&gt; print(f&#34;&lt;K_x,K_y&gt; / ||K_xx|| / ||K_yy||: {cka_score:.3f}&#34;)
     &#34;&#34;&#34;
 
     def __init__(

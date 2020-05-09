@@ -1,4 +1,4 @@
-.PHONY: conda format style types black test link check notebooks pdocs pdocs-live
+.PHONY: conda format style types black test link check notebooks pdocs pdocs-live docs docs-live docs-live-d docs-deploy
 .DEFAULT_GOAL = help
 
 PYTHON = python
@@ -8,7 +8,7 @@ ROOT = ./
 PIP = pip
 CONDA = conda
 SHELL = bash
-ENV = src
+PKGROOT = src
 HOST = 127.0.0.1
 PORT = 3002
 
@@ -101,22 +101,26 @@ jlab_html:
 pdocs:	## Generate python API Documentation with pdoc
 		@printf "\033[1;34mCreating python API documentation with pdoc...\033[0m\n"
 		pdoc --html --overwrite ${PKGROOT} --html-dir docs/
-		@ touch $@
 		@printf "\033[1;34mpdoc completed!\033[0m\n\n"
 
 pdocs-live: ## Start python API live documentation
 		@printf "\033[1;34mStarting live documentation with pdoc...\033[0m\n"
 		pdoc ${PKGROOT} --http $(HOST):$(PORT)
 
-mkdocs: notebooks_to_docs ## Build site documentation with mkdocs
+docs: notebooks_to_docs pdocs ## Build site documentation with mkdocs
 		@printf "\033[1;34mCreating full documentation with mkdocs...\033[0m\n"
-		mkdocs build --config-file mkdocs.yml --clean --theme readthedocs --site-dir site/
+		mkdocs build --config-file mkdocs.yml --clean --theme material --site-dir site/
 		@printf "\033[1;34mmkdocs completed!\033[0m\n\n"
 
-mkdocs-live: notebooks_to_docs ## Build mkdocs documentation live
+docs-live: notebooks_to_docs ## Build mkdocs documentation live
 		@printf "\033[1;34mStarting live docs with mkdocs...\033[0m\n"
 		mkdocs serve --dev-addr $(HOST):$(PORT) --theme material
 
-mkdocs-live-d: notebooks_to_docs ## Build mkdocs documentation live (quicker reload)
+docs-live-d: notebooks_to_docs ## Build mkdocs documentation live (quicker reload)
 		@printf "\033[1;34mStarting live docs with mkdocs...\033[0m\n"
 		mkdocs serve --dev-addr $(HOST):$(PORT) --dirtyreload --theme material
+
+docs-deploy: notebooks_to_docs pdocs ## Deploy docs
+		@printf "\033[1;34mDeploying docs...\033[0m\n"
+		mkdocs gh-deploy
+		@printf "\033[1;34mSuccess...\033[0m\n"

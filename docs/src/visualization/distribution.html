@@ -24,11 +24,13 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Tuple, List, Optional
+<pre><code class="python">from typing import List, Optional, Tuple
+
 import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
 import numpy as np
+import pandas as pd
+import seaborn as sns
+from src.features.utils import df_query, subset_dataframe, get_correlations
 
 plt.style.use([&#34;ggplot&#34;, &#34;seaborn-paper&#34;])
 
@@ -57,7 +59,80 @@ def plot_scorer(results_df: pd.DataFrame, scorer: str) -&gt; None:
     return None
 
 
-# plot the results
+def plot_score_vs_mi(
+    df: pd.DataFrame,
+    scorer: Optional[str] = None,
+    #     methods: List[str]=[&#39;silverman&#39;],
+    #     percent: Optional[List[str]]=None,
+    compare: str = &#34;standard&#34;,
+):
+
+    # copy dataframe to prevent overwriting
+    sub_df = df.copy()
+    # segment method
+    if scorer is not None:
+        sub_df = subset_dataframe(sub_df, [df_query(&#34;scorer&#34;, [scorer])])
+
+    #     # get percentage (if necessary)
+    #     if percent is not None:
+    #         sub_df = df[df[&#34;sigma_method&#34;].isin(percent)]
+
+    # dropcolumns with dimensions and samples
+    sub_df = sub_df.drop(
+        [
+            &#34;dimensions&#34;,
+            &#34;samples&#34;,
+            &#34;std&#34;,
+            &#34;nu&#34;,
+            &#34;trial&#34;,
+            &#34;dataset&#34;,
+            &#34;sigma_X&#34;,
+            &#34;sigma_Y&#34;,
+        ],
+        axis=1,
+    )
+
+    if compare == &#34;standard&#34;:
+        true_df = sub_df[sub_df[&#34;standardize&#34;] == True]
+        true_corrs = get_correlations(true_df)
+        true_label = (
+            f&#34;Standardized, (p:{true_corrs.pearson:.2f}, sp:{true_corrs.spearman:.2f})&#34;
+        )
+
+        false_df = sub_df[sub_df[&#34;standardize&#34;] == False]
+        false_corrs = get_correlations(false_df)
+        false_label = f&#34;Non-Standardized, (p:{false_corrs.pearson:.2f}, sp:{false_corrs.spearman:.2f})&#34;
+
+    elif compare == &#34;dimension&#34;:
+        true_df = sub_df[sub_df[&#34;per_dimension&#34;] == True]
+        true_corrs = get_correlations(true_df)
+        true_label = (
+            f&#34;Per Dimension, (p:{true_corrs.pearson:.2f}, sp:{true_corrs.spearman:.2f})&#34;
+        )
+
+        false_df = sub_df[sub_df[&#34;per_dimension&#34;] == False]
+        false_corrs = get_correlations(false_df)
+        false_label = (
+            f&#34;Same, (p:{false_corrs.pearson:.2f}, sp:{false_corrs.spearman:.2f})&#34;
+        )
+    else:
+        raise ValueError(f&#34;Unrecognized compare entry: {compare}&#34;)
+
+    # plot
+
+    fig, ax = plt.subplots()
+
+    ax.scatter(true_df.score, true_df.mutual_info, marker=&#34;o&#34;, s=30, label=true_label)
+    ax.scatter(
+        false_df.score, false_df.mutual_info, marker=&#34;x&#34;, s=30, label=false_label
+    )
+    ax.legend()
+    ax.set_yscale(&#34;symlog&#34;)
+    ax.set_xlabel(&#34;Score&#34;)
+    ax.set_ylabel(&#34;Mutual Information&#34;)
+    #     ax.set_title(f&#34;{scorer.upper()}&#34;)
+    # ax.text(0.18, 0.18, r, {&#39;color&#39;: &#39;C0&#39;, &#39;fontsize&#39;: 16})
+    return fig, ax
 
 
 def plot_scorer_mi(
@@ -177,6 +252,91 @@ def plot_legend_alone(handles, labels, save_name: Optional[str] = None):
     if save_name is not None:
         fig_legend.savefig(FIG_PATH + save_name + &#34;_legend.png&#34;, bbox_inches=&#34;tight&#34;)
     fig_legend.show()</code></pre>
+</details>
+</dd>
+<dt id="src.visualization.distribution.plot_score_vs_mi"><code class="name flex">
+<span>def <span class="ident">plot_score_vs_mi</span></span>(<span>df: pandas.core.frame.DataFrame, scorer: Union[str, NoneType] = None, compare: str = 'standard')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_score_vs_mi(
+    df: pd.DataFrame,
+    scorer: Optional[str] = None,
+    #     methods: List[str]=[&#39;silverman&#39;],
+    #     percent: Optional[List[str]]=None,
+    compare: str = &#34;standard&#34;,
+):
+
+    # copy dataframe to prevent overwriting
+    sub_df = df.copy()
+    # segment method
+    if scorer is not None:
+        sub_df = subset_dataframe(sub_df, [df_query(&#34;scorer&#34;, [scorer])])
+
+    #     # get percentage (if necessary)
+    #     if percent is not None:
+    #         sub_df = df[df[&#34;sigma_method&#34;].isin(percent)]
+
+    # dropcolumns with dimensions and samples
+    sub_df = sub_df.drop(
+        [
+            &#34;dimensions&#34;,
+            &#34;samples&#34;,
+            &#34;std&#34;,
+            &#34;nu&#34;,
+            &#34;trial&#34;,
+            &#34;dataset&#34;,
+            &#34;sigma_X&#34;,
+            &#34;sigma_Y&#34;,
+        ],
+        axis=1,
+    )
+
+    if compare == &#34;standard&#34;:
+        true_df = sub_df[sub_df[&#34;standardize&#34;] == True]
+        true_corrs = get_correlations(true_df)
+        true_label = (
+            f&#34;Standardized, (p:{true_corrs.pearson:.2f}, sp:{true_corrs.spearman:.2f})&#34;
+        )
+
+        false_df = sub_df[sub_df[&#34;standardize&#34;] == False]
+        false_corrs = get_correlations(false_df)
+        false_label = f&#34;Non-Standardized, (p:{false_corrs.pearson:.2f}, sp:{false_corrs.spearman:.2f})&#34;
+
+    elif compare == &#34;dimension&#34;:
+        true_df = sub_df[sub_df[&#34;per_dimension&#34;] == True]
+        true_corrs = get_correlations(true_df)
+        true_label = (
+            f&#34;Per Dimension, (p:{true_corrs.pearson:.2f}, sp:{true_corrs.spearman:.2f})&#34;
+        )
+
+        false_df = sub_df[sub_df[&#34;per_dimension&#34;] == False]
+        false_corrs = get_correlations(false_df)
+        false_label = (
+            f&#34;Same, (p:{false_corrs.pearson:.2f}, sp:{false_corrs.spearman:.2f})&#34;
+        )
+    else:
+        raise ValueError(f&#34;Unrecognized compare entry: {compare}&#34;)
+
+    # plot
+
+    fig, ax = plt.subplots()
+
+    ax.scatter(true_df.score, true_df.mutual_info, marker=&#34;o&#34;, s=30, label=true_label)
+    ax.scatter(
+        false_df.score, false_df.mutual_info, marker=&#34;x&#34;, s=30, label=false_label
+    )
+    ax.legend()
+    ax.set_yscale(&#34;symlog&#34;)
+    ax.set_xlabel(&#34;Score&#34;)
+    ax.set_ylabel(&#34;Mutual Information&#34;)
+    #     ax.set_title(f&#34;{scorer.upper()}&#34;)
+    # ax.text(0.18, 0.18, r, {&#39;color&#39;: &#39;C0&#39;, &#39;fontsize&#39;: 16})
+    return fig, ax</code></pre>
 </details>
 </dd>
 <dt id="src.visualization.distribution.plot_scorer"><code class="name flex">
@@ -300,6 +460,7 @@ def plot_legend_alone(handles, labels, save_name: Optional[str] = None):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="src.visualization.distribution.plot_legend_alone" href="#src.visualization.distribution.plot_legend_alone">plot_legend_alone</a></code></li>
+<li><code><a title="src.visualization.distribution.plot_score_vs_mi" href="#src.visualization.distribution.plot_score_vs_mi">plot_score_vs_mi</a></code></li>
 <li><code><a title="src.visualization.distribution.plot_scorer" href="#src.visualization.distribution.plot_scorer">plot_scorer</a></code></li>
 <li><code><a title="src.visualization.distribution.plot_scorer_mi" href="#src.visualization.distribution.plot_scorer_mi">plot_scorer_mi</a></code></li>
 </ul>

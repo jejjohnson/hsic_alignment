@@ -11,12 +11,11 @@ from sklearn.metrics.pairwise import linear_kernel, pairwise_kernels
 from sklearn.preprocessing import KernelCenterer
 from sklearn.utils import check_array, check_random_state
 
-from src.models.utils import estimate_gamma
+from scipy.spatial.distance import pdist, squareform
 
 # Insert path to package,.
 pysim_path = f"/home/emmanuel/code/pysim/"
 sys.path.insert(0, pysim_path)
-
 
 
 @dataclass
@@ -46,15 +45,15 @@ class HSICModel:
     
     Example
     --------
-    >> from src.models.dependence import HSICModel
-    >> from sklearn import datasets
-    >> X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
-    >> Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
-    >> hsic_model = HSICModel()
-    >> hsic_model.gamma_X = 100 
-    >> hsic_model.gamma_Y = 0.01
-    >> hsic_score = hsic_model.score(X, Y, 'hsic')
-    >> print(hsic_score)
+    >>> from src.models.dependence import HSICModel
+    >>> from sklearn import datasets
+    >>> X, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=123)
+    >>> Y, _ = datasets.make_blobs(n_samples=1_000, n_features=2, random_state=1)
+    >>> hsic_model = HSICModel()
+    >>> hsic_model.gamma_X = 100 
+    >>> hsic_model.gamma_Y = 0.01
+    >>> hsic_score = hsic_model.score(X, Y, 'hsic')
+    >>> print(hsic_score)
     0.00042726396990996684
     """
 
@@ -124,10 +123,6 @@ class HSICModel:
         return clf_hsic.score(X, normalize=self.normalize)
 
 
-
-
-
-
 class HSIC(BaseEstimator):
     """Hilbert-Schmidt Independence Criterion (HSIC). This is
     a method for measuring independence between two variables.
@@ -194,14 +189,14 @@ class HSIC(BaseEstimator):
 
     Example
     -------
-    >> samples, features = 100, 50
-    >> X = np.random.randn(samples, features)
-    >> A = np.random.rand(features, features)
-    >> Y = X @ A
-    >> hsic_clf = HSIC(center=True, kernel='linear')
-    >> hsic_clf.fit(X, Y)
-    >> cka_score = hsic_clf.score(X)
-    >> print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")
+    >>> samples, features = 100, 50
+    >>> X = np.random.randn(samples, features)
+    >>> A = np.random.rand(features, features)
+    >>> Y = X @ A
+    >>> hsic_clf = HSIC(center=True, kernel='linear')
+    >>> hsic_clf.fit(X, Y)
+    >>> cka_score = hsic_clf.score(X)
+    >>> print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")
     """
 
     def __init__(
@@ -249,9 +244,9 @@ class HSIC(BaseEstimator):
         self.dy_dimensions = Y.shape[1]
 
         # subsample data if necessary
-        if self.subsample is not None:
-            X = self.rng.permutation(X)[: self.subsample, :]
-            Y = self.rng.permutation(Y)[: self.subsample, :]
+
+        X = subset_indices(X, subsample=self.subsample, random_state=self.random_state)
+        Y = subset_indices(Y, subsample=self.subsample, random_state=self.random_state)
 
         self.X_train_ = X
         self.Y_train_ = Y
@@ -387,14 +382,14 @@ class RandomizedHSIC(BaseEstimator):
 
     Example
     -------
-    >> samples, features, components = 100, 50, 10
-    >> X = np.random.randn(samples, features)
-    >> A = np.random.rand(features, features)
-    >> Y = X @ A
-    >> rhsic_clf = RandomizeHSIC(center=True, n_components=components)
-    >> rhsic_clf.fit(X, Y)
-    >> cka_score = rhsic_clf.score(X)
-    >> print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")
+    >>> samples, features, components = 100, 50, 10
+    >>> X = np.random.randn(samples, features)
+    >>> A = np.random.rand(features, features)
+    >>> Y = X @ A
+    >>> rhsic_clf = RandomizeHSIC(center=True, n_components=components)
+    >>> rhsic_clf.fit(X, Y)
+    >>> cka_score = rhsic_clf.score(X)
+    >>> print(f"<K_x,K_y> / ||K_xx|| / ||K_yy||: {cka_score:.3f}")
     """
 
     def __init__(
@@ -441,9 +436,8 @@ class RandomizedHSIC(BaseEstimator):
         self.dy_dimensions = Y.shape[1]
 
         # subsample data if necessary
-        if self.subsample is not None:
-            X = self.rng.permutation(X)[: self.subsample, :]
-            Y = self.rng.permutation(Y)[: self.subsample, :]
+        X = subset_indices(X, subsample=self.subsample, random_state=self.random_state)
+        Y = subset_indices(Y, subsample=self.subsample, random_state=self.random_state)
 
         self.X_train_ = X
         self.Y_train_ = Y
@@ -524,3 +518,105 @@ class RandomizedHSIC(BaseEstimator):
             return self.hsic_bias * self.hsic_value
         else:
             raise ValueError(f"Unrecognized normalize argument: {normalize}")
+
+
+def scotts_factor(X: np.ndarray) -> float:
+    """Scotts Method to estimate the length scale of the 
+    rbf kernel.
+    
+        factor = n**(-1./(d+4))
+    
+    Parameters
+    ----------
+    X : np.ndarry
+        Input array
+    
+    Returns
+    -------
+    factor : float
+        the length scale estimated
+    
+    """
+    n_samples, n_features = X.shape
+
+    return np.power(n_samples, -1 / (n_features + 4.0))
+
+
+def silvermans_factor(X: np.ndarray) -> float:
+    """Silvermans method used to estimate the length scale
+    of the rbf kernel.
+    
+    factor = (n * (d + 2) / 4.)**(-1. / (d + 4)).
+    
+    Parameters
+    ----------
+    X : np.ndarray,
+        Input array
+    
+    Returns
+    -------
+    factor : float
+        the length scale estimated
+    """
+    n_samples, n_features = X.shape
+
+    base = (n_samples * (n_features + 2.0)) / 4.0
+
+    return np.power(base, -1 / (n_features + 4.0))
+
+
+def kth_distance(dists: np.ndarray, percent: float) -> np.ndarray:
+
+    if isinstance(percent, float):
+        percent /= 100
+
+    # kth distance calculation (50%)
+    kth_sample = int(percent * dists.shape[0])
+
+    # take the Kth neighbours of that distance
+    k_dist = dists[:, kth_sample]
+
+    return k_dist
+
+
+def sigma_estimate(
+    X: np.ndarray,
+    method: str = "median",
+    percent: Optional[int] = None,
+    heuristic: bool = False,
+) -> float:
+
+    # get the squared euclidean distances
+    if method == "silverman":
+        return silvermans_factor(X)
+    elif method == "scott":
+        return scotts_factor(X)
+    elif percent is not None:
+        kth_sample = int((percent / 100) * X.shape[0])
+        dists = np.sort(squareform(pdist(X, "sqeuclidean")))[:, kth_sample]
+    else:
+        dists = np.sort(pdist(X, "sqeuclidean"))
+
+    if method == "median":
+        sigma = np.median(dists)
+    elif method == "mean":
+        sigma = np.mean(dists)
+    else:
+        raise ValueError(f"Unrecognized distance measure: {method}")
+
+    if heuristic:
+        sigma = np.sqrt(sigma / 2)
+    return sigma
+
+
+def subset_indices(
+    X: np.ndarray, subsample: Optional[int] = None, random_state: int = 123,
+) -> Tuple[np.ndarray, np.ndarray]:
+
+    if subsample is not None and subsample < X.shape[0]:
+        rng = check_random_state(random_state)
+        indices = np.arange(X.shape[0])
+        subset_indices = rng.permutation(indices)[:subsample]
+        X = X[subset_indices, :]
+
+    return X

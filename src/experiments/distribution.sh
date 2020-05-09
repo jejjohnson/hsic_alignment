@@ -14,5 +14,5 @@ source activate hsic_align
 
 
 # Individual
-srun --nodes 1 --ntasks 1 python -u src/experiments/distributions.py --dataset gauss --njobs $SLURM_CPUS_PER_TASK --verbose 1 --save v5 &
-srun --nodes 1 --ntasks 1 python -u src/experiments/distributions.py --dataset tstudent --njobs $SLURM_CPUS_PER_TASK --verbose 1 --save v5 
+srun --nodes 1 --ntasks 1 python -u src/experiments/distributions.py --dataset gauss --njobs $SLURM_CPUS_PER_TASK --verbose 1 --save v7 &
+srun --nodes 1 --ntasks 1 python -u src/experiments/distributions.py --dataset tstudent --njobs $SLURM_CPUS_PER_TASK --verbose 1 --save v7 
